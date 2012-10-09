@@ -1,0 +1,6 @@
+AR App
+
+Please install the android NDK (revision 9) and android OpenCV SDK(2.4.2) in following directories:
+/opt/android-ndk/
+/opt/android-OpenCV-2.4.2
+
