@@ -14,23 +14,31 @@ public:
 	void loadTexture(GLubyte* pixels);
 	void renderFrame();
 
-	int imageWidth;
-	int imageHeight;
-
 private:
 
 	GLuint vsPositionHandle;
 	GLuint vsTexCoordHandle;
 	GLuint vsProjectionHandle;
+	GLuint vsModelViewMatrixHandle;
 	GLuint fsTextureHandle;
 	GLuint programHandle;
 
 	GLuint textureHandle;
 	GLuint textureHandle2;
 
-	float width;
-	float height;
+	// screen dimension save this as members so we don't calculate them every time
+	float viewPortWidth;
+	float viewPortHeight;
+	float viewPortRatio;
 
+	float imageWidth;
+	float imageHeight;
+	float imageRatio;
+
+	float frustumNear;
+	float frustumFar;
+	float frustumAngle;
+	float frustumDistanceRatio;
 
 
 	static void printGLString(const char *name, GLenum s);

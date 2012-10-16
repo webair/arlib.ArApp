@@ -6,6 +6,11 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -22,12 +27,13 @@ static const char verticeShader[] =
 		"attribute vec4 a_position;"
 		"attribute vec2 a_texCoord;"
 		"uniform mat4 u_projection;"
+		"uniform mat4 u_modelViewMatrix;"
 		"varying vec2 v_texCoord;"
 		"varying vec4 v_color;"
 
 		"void main()"
 		"{"
-		"gl_Position = u_projection * a_position;"
+		"gl_Position = u_projection * u_modelViewMatrix * a_position;"
 		"v_color = vec4(1.0,0.0,0.0,1.0);"
 		"v_texCoord = a_texCoord;"
 		"}";
@@ -41,6 +47,25 @@ static const char fragmentShader[] =
 		"{"
 		"gl_FragColor = texture2D( s_texture, v_texCoord );"
 		"}";
+
+
+GLfloat gCameraQuad[] = {
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f
+};
+
+GLfloat gCameraTexCoord[] = {
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+};
 
 Renderer::Renderer() {
 	setupGraphics();
@@ -62,34 +87,41 @@ void Renderer::checkGlError(const char* op) {
 }
 
 void Renderer::setImageSize(int w, int h) {
-	this->imageWidth = w;
-	this->imageHeight = h;
+	imageWidth = (float) w;
+	imageHeight = (float) h;
+	imageRatio = w/h;
 }
 
 void Renderer::setScreenSize(int w, int h) {
 	LOGI("set screen size w:%d h:%d",w,h);
-	width=(float)w;
-	height=(float)h;
-	glViewport(0, 0, w, h);
+	viewPortWidth=(float)w;
+	viewPortHeight=(float)h;
+	viewPortRatio = viewPortWidth / viewPortHeight;
+	glViewport(0, 0, viewPortWidth, viewPortHeight);
 
-	float projection[16];
-	for (int i=0; i<16; i++) {
-		projection[i] = 0.0f;
-	}
-	float frustumScale = 1.0f;
-	float fzNear = 0.5f; float fzFar = 3.0f;
-
-	projection[0] = 0.5f;
-	projection[5] = 0.5f;
-	projection[10] = 1.0f;
-	projection[11] = 1.0f;
-	projection[12] = 0.5f;
-
-
+	glm::mat4 Projection = glm::perspective(frustumAngle, viewPortRatio, frustumNear, frustumFar);
 	glUseProgram(programHandle);
-	glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, projection);
+	glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, glm::value_ptr(Projection));
 	checkGlError("glUniformMatrix4fv");
+
 	glUseProgram(0);
+
+	//TODO: think about when image height is smaller than screen!!!
+	float screenImageWidth = (imageWidth / imageHeight) * viewPortHeight;
+	float ratio = (screenImageWidth / viewPortHeight);
+
+	for (int i=0; i<18; i++) {
+		if (i % 3 == 0) {
+			gCameraQuad[i] *= ratio;
+
+
+			gCameraQuad[i] *= frustumDistanceRatio * 100.0f;
+			gCameraQuad[i+1] *= frustumDistanceRatio * 100.0f;
+			gCameraQuad[i+2] = -100.0;
+		}
+
+	}
+
 
 
 }
@@ -125,6 +157,17 @@ GLuint Renderer::loadShader(GLenum shaderType, const char* pSource) {
 }
 
 void Renderer::setupGraphics() {
+	frustumAngle = 30.0f;
+	frustumNear = 1.0f;
+	frustumFar = 100.0f;
+	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
+
+    LOGI("setup graphics:");
+    LOGI("frustum near: %f", frustumNear);
+    LOGI("frustum far: %f", frustumFar);
+    LOGI("frustum angle: %f", frustumAngle);
+    LOGI("frustum distance ratio: %f", frustumDistanceRatio);
+
 	printGLString("Version", GL_VERSION);
 	printGLString("Vendor", GL_VENDOR);
 	printGLString("Renderer", GL_RENDERER);
@@ -163,21 +206,19 @@ void Renderer::setupGraphics() {
 		return;
 	}
 	glUseProgram(programHandle);
+	glEnable(GL_CULL_FACE);
+
+
 	vsPositionHandle = glGetAttribLocation(programHandle, "a_position");
 	vsTexCoordHandle = glGetAttribLocation(programHandle, "a_texCoord");
 	vsProjectionHandle = glGetUniformLocation(programHandle, "u_projection");
 	fsTextureHandle = glGetUniformLocation(programHandle, "s_texture");
-	LOGI("projection handle id: %d", vsProjectionHandle);
+	vsModelViewMatrixHandle = glGetUniformLocation(programHandle, "u_modelViewMatrix");
 	// Use tightly packed data
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	// Generate a texture object
     glGenTextures(1, &textureHandle);
     glGenTextures(1, &textureHandle2);
-
-    LOGI("texture %d, %d loaded", textureHandle, textureHandle2);
-    LOGI("texture handle: %d", fsTextureHandle);
-
-
 }
 
 void Renderer::loadTexture(GLubyte* pixels) {
@@ -216,12 +257,12 @@ void Renderer::loadTexture(GLubyte* pixels) {
 
 //cube
 const GLfloat gFrontFace[] = {
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f
+		-1.0f, 1.0f, -5.0f,
+		-1.0f, -1.0f, -5.0f,
+        1.0f, -1.0f, -5.0f,
+        1.0f, -1.0f, -5.0f,
+        1.0f, 1.0f, -5.0f,
+        -1.0f, 1.0f, -5.0f
 };
 
 const GLfloat gBackFace[] = {
@@ -235,12 +276,12 @@ const GLfloat gBackFace[] = {
 
 
 const GLfloat gLeftFace[] = {
-		-1.0f, -1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 2.0f,
-        -1.0f, 1.0f, 2.0f,
-        -1.0f, -1.0f, 2.0f,
-        -1.0f, -1.0f, 1.0f
+		-1.0f, -1.0f, -20.0f,
+		-1.0f, -1.0f, -40.0f,
+        -1.0f, 1.0f, -20.0f,
+        -1.0f, 1.0f, -40.0f,
+        -1.0f, 1.0f, -20.0f,
+        -1.0f, -1.0f, -20.0f
 };
 
 const GLfloat gRightFace[] = {
@@ -251,16 +292,7 @@ const GLfloat gRightFace[] = {
         1.0f, -1.0f, 2.0f,
         1.0f, -1.0f, 1.0f
 };
-/*
-const GLfloat gTexCoords[] = {
-		-0.5f, 0.5f,
-		-0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f,
-        -0.5f, 0.5f
-};
-*/
+
 const GLfloat gTexCoords[] = {
         0.0f, 0.0f,
         0.0f, 1.0f,
@@ -280,9 +312,11 @@ void Renderer::renderFrame() {
     glUseProgram(programHandle);
     checkGlError("glUseProgram");
 
-    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gFrontFace);
+	glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gCameraQuad);
     checkGlError("glVertexAttribPointer");
-    glVertexAttribPointer(vsTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gTexCoords);
+    glVertexAttribPointer(vsTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gCameraTexCoord);
     checkGlError("glVertexAttribPointer");
 
     glEnableVertexAttribArray(vsPositionHandle);
@@ -301,12 +335,14 @@ void Renderer::renderFrame() {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
 
+    /*
     glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gLeftFace);
     checkGlError("glVertexAttribPointer");
-    glBindTexture(GL_TEXTURE_2D, textureHandle2);
+    glBindTexture(GL_TEXTURE_2D, textureHandle);
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
-
+*/
 	/*
 	//calculate FPS
 	 struct timespec res;
