@@ -22,17 +22,18 @@ public:
 	~ArLib();
 
 	//camera image
-	void setImage(unsigned char* imageData);
 	void setVerticalAngle(float angle);
 
+
+	//actions
+	void processImage(unsigned char* imageData);
 
 	//device states
 	void setAzimuth(float azimuth);
 	void setPitch(float pitch);
 	void setRoll(float roll);
 
-	//actions
-	void process();
+
 
 	//getters
 	vector<Model*>* getModels();

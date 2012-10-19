@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
  * Signature: ([B)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
-  (JNIEnv *, jclass, jbyteArray);
+  (JNIEnv *, jclass, jbyteArray, jfloat, jfloat, jfloat);
 
 #ifdef __cplusplus
 }

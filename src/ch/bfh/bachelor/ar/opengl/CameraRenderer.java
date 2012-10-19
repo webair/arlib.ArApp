@@ -22,14 +22,16 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	public byte[] frame = null;
 	public byte[] buffer = null;	
 	
-	
+	private float azimuth;
+	private float pitch;
+	private float roll;
 	
 	public boolean hasImage = false;
 	private Camera cam;
 	
 	public synchronized void onDrawFrame(GL10 gl) {
 		if (hasImage) {
-			ArLib.precessImage(frame);
+			ArLib.precessImage(frame, 0.0f, 0.0f, 0.0f);
 			this.notify();
 		}
 	}

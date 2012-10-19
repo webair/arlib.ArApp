@@ -278,14 +278,32 @@ void Renderer::renderFrame() {
     glUseProgram(objectProgramRef);
 
     glm::mat4 Projection = glm::perspective(frustumAngle, imageRatio, frustumNear, frustumFar);
-	Projection = glm::rotate(Projection, angle, glm::vec3(0.0, 1.0, 0.0));
+	//Projection = glm::rotate(Projection, angle, glm::vec3(0.0, 1.0, 0.0));
 	//glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, glm::value_ptr(Projection));
     //Rotate it
     Model* m = models->at(0);
     glm::mat4 View = *m->modelView;
-    //View = glm::translate(View, glm::vec3(0.0, 0.0, -11.0));
-    //View = glm::rotate(View, angle, glm::vec3(0.0, 1.0, 0.0));
-    //View = glm::translate(View, glm::vec3(0.0, 0.0, 11.0));
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
+    View = glm::rotate(View, angle, glm::vec3(0.0, 1.0, 0.0));
+    View = glm::translate(View, glm::vec3(0.0, 0.0, 5.0));
+
+    View = Projection * View;
+    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
+
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
+    checkGlError("glVertexAttribPointer");
+
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+
+    glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
+    checkGlError("glDrawArrays");
+
+    m = models->at(1);
+    View = *m->modelView;
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
+    View = glm::rotate(View, angle, glm::vec3(1.0, 0.0, 0.0));
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
 
     View = Projection * View;
     glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
