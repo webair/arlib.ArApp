@@ -6,15 +6,22 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import ch.bfh.bachelor.ar.ArLib;
 
 public class CameraRenderer implements GLSurfaceView.Renderer,
-		android.hardware.Camera.PreviewCallback {
+		android.hardware.Camera.PreviewCallback, SensorEventListener{
     private static final String TAG = "CameraRenderer";
     
 	public int frameWidth = 0;
@@ -25,13 +32,43 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	private float azimuth;
 	private float pitch;
 	private float roll;
+
+	//new getOrientation
+	private SensorManager sm;
+	private float[] mags;
+	private float[] accels;
+	private float[] gyro;
+    private static final int matrix_size = 16;
+    float[] RE = new float[matrix_size];
+    float[] outR = new float[matrix_size];
+    float[] I = new float[matrix_size];
+    float[] values = new float[3]; 
+
+    double[] azimuthArr;
+    double[] pitchArr;
+    double[] rollArr;
+    int bufsize;
+    int bufpoint;
 	
 	public boolean hasImage = false;
 	private Camera cam;
 	
+	public CameraRenderer(Context context)
+	{
+		sm = (SensorManager)context.getSystemService(context.SENSOR_SERVICE);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sm.SENSOR_DELAY_NORMAL);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sm.SENSOR_DELAY_GAME);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sm.SENSOR_DELAY_GAME);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sm.SENSOR_DELAY_NORMAL);
+	    bufsize=20;
+	    bufpoint=0;
+	    azimuthArr = new double[bufsize];
+	    pitchArr= new double[bufsize];
+	    rollArr = new double[bufsize];
+	}
 	public synchronized void onDrawFrame(GL10 gl) {
 		if (hasImage) {
-			ArLib.precessImage(frame, 0.0f, 0.0f, 0.0f);
+		ArLib.precessImage(frame, azimuth, pitch, roll);
 			this.notify();
 		}
 	}
@@ -146,5 +183,79 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
             }
         }
     }
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		
+		
+		
+		
+		switch (event.sensor.getType())
+        {
+        	case Sensor.TYPE_MAGNETIC_FIELD:
+            mags = event.values.clone();
+            break;
+        	case Sensor.TYPE_ACCELEROMETER:
+            accels = event.values.clone();
+            break;     
+        	case Sensor.TYPE_GYROSCOPE:
+        	gyro = event.values.clone();
+        	break;
+        }
+        
+        if (mags != null && accels != null) 
+        {
+            SensorManager.getRotationMatrix(RE, I, accels, mags);
+            // Correct if screen is in Landscape
+            SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
+            //Calculate Orientation
+            SensorManager.getOrientation(outR, values);
+
+
+            azimuthArr[bufpoint] = Math.toDegrees(values[0]);
+            pitchArr[bufpoint] = Math.toDegrees(values[1]);
+            rollArr[bufpoint] = Math.toDegrees(values[2]);
+            
+            if(bufpoint == (bufsize-1))
+            {
+            java.util.Arrays.sort(azimuthArr);
+            java.util.Arrays.sort(pitchArr);
+            java.util.Arrays.sort(rollArr);
+            double tmpAzimuth=0;
+            double tmpPitch=0;
+            double tmpRoll=0;
+            
+            this.azimuth=(float)azimuthArr[(azimuthArr.length/2)-1];
+            this.pitch=(float)pitchArr[(pitchArr.length/2)-1];
+            this.roll=(float)rollArr[(rollArr.length/2)-1];
+            bufpoint=0;
+            }
+            else
+            {
+            	bufpoint++;
+            }
+            mags=null;
+            accels=null;
+
+        }
+        
+        
+        /*
+        if(gyro != null)
+        {
+        	if(Math.round(Math.toDegrees(gyro[0]))!=0)
+        		//outputOrTv1.setText(Double.toString(Math.round(Math.toDegrees(gyro[0])))+deg);
+        	if(Math.round(Math.toDegrees(gyro[1]))!=0)
+        		//outputOrTv2.setText(Double.toString(Math.round(Math.toDegrees(gyro[1])))+deg);
+        	if(Math.round(Math.toDegrees(gyro[2]))!=0)
+        		//outputOrTv3.setText(Double.toString(Math.round(Math.toDegrees(gyro[2])))+deg);
+            gyro=null;
+        }*/
+		
+	}
 
 }
