@@ -1,32 +1,21 @@
 package ch.bfh.bachelor.ar.opengl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.util.Log;
 import ch.bfh.bachelor.ar.ArLib;
-import ch.bfh.bachelor.ar.R;
 
 public class CameraRenderer implements GLSurfaceView.Renderer,
 		android.hardware.Camera.PreviewCallback {
     private static final String TAG = "CameraRenderer";
-	
-    private boolean testImage = false;
     
 	public int frameWidth = 0;
 	public int frameHeight = 0;
@@ -37,46 +26,28 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	
 	public boolean hasImage = false;
 	private Camera cam;
-
-	public CameraRenderer(Context context) {
-		if (testImage) {
-			Bitmap testBitmap = BitmapFactory.decodeResource(context.getResources(),R.drawable.test_960x720);  
-			int bytes = testBitmap.getWidth()*testBitmap.getHeight()*4; //calculate how many bytes our image consists of. Use a different value than 4 if you don't use 32bit images.
-			ByteBuffer buffer = ByteBuffer.allocate(bytes); //Create a new buffer
-			testBitmap.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-			frame = buffer.array(); //Get the underlying array containing the data.
-			Log.i(TAG, String.format("image length: %d", frame.length));
-			this.frameHeight = testBitmap.getHeight();
-			this.frameWidth = testBitmap.getWidth();
+	
+	public synchronized void onDrawFrame(GL10 gl) {
+		if (hasImage) {
+			ArLib.precessImage(frame);
+			this.notify();
 		}
-		
-		
 	}
 	
-	public void onDrawFrame(GL10 gl) {
-		//Log.i(TAG, "draw frame");
-		/*
-		synchronized (lock) {
-		//if (hasImage) {
-				Log.i(TAG, "render image");
-				
-				Log.i(TAG, "finished rendering image");
-				lock.notify();  
-			}
-		//}
-		 
-		*/
-		if (hasImage || testImage) {
-			Log.i(TAG, "process image");
-			ArLib.precessImage(frame);
-		}
+	@Override
+	public void onPreviewFrame(byte[] data, Camera camera) {
+
+        synchronized (this) {
+            System.arraycopy(data, 0, this.frame, 0, data.length);
+            hasImage = true;
+            this.notify();
+        }
+        cam.addCallbackBuffer(buffer);
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		if (!testImage) {
-			openCamera();
-			setupCamera(1134, 720);
-		}
+		openCamera();
+		setupCamera(1134, 720);
 		ArLib.initArLib(width, height, frameWidth, frameHeight);
 	}
 
@@ -84,21 +55,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		// stub method
 	}
 
-	@Override
-	public void onPreviewFrame(byte[] data, Camera camera) {
 
-        synchronized (this) {
-        	Log.i(TAG, "read image");
-            System.arraycopy(data, 0, this.frame, 0, data.length);
-            //cam.stopPreview();
-            hasImage = true;
-            
-        }
-        cam.addCallbackBuffer(buffer);
-        //cam.setPreviewCallbackWithBuffer(this);
-		//Log.d("RENDERER", "recieved image");
-		
-	}
 	
     public void openCamera() {
         Log.i(TAG, "openCamera");

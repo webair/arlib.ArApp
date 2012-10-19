@@ -5,14 +5,12 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.graphics.ImageFormat;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import ch.bfh.bachelor.ar.opengl.CameraRenderer;
 import ch.bfh.bachelor.ar.opengl.OpenGLSurfaceView;
 
@@ -29,9 +27,9 @@ public class MainActivity extends Activity {
 					Log.i(TAG, "OpenCV loaded successfully");
 
 					//instantiate open gl renderer
-					cr = new CameraRenderer(mAppContext);
+					cr = new CameraRenderer();
 					
-					View mainView = new OpenGLSurfaceView(getApplication(), cr);
+					View mainView = new OpenGLSurfaceView(getApplication(), cr);					
 					setContentView(mainView);
 					
 				} 
@@ -71,6 +69,5 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		cr.releaseCamera();
-		//cr.pauseCameraPreview();
 	}
 }
