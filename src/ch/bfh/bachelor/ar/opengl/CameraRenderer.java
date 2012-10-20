@@ -1,6 +1,7 @@
 package ch.bfh.bachelor.ar.opengl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -28,10 +29,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	public int frameHeight = 0;
 	public byte[] frame = null;
 	public byte[] buffer = null;	
-	
-	private float azimuth;
-	private float pitch;
-	private float roll;
 
 	//new getOrientation
 	int sensorDelay;
@@ -67,33 +64,130 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
 	    if(sensorDelay == sm.SENSOR_DELAY_FASTEST)
 	    {
-			bufsize=3;
-		    bufpoint=0;
+			bufsize=11;
+		    bufmiddle=5;
 	    }
 	    else if(sensorDelay == sm.SENSOR_DELAY_GAME)
 	    {
-			bufsize=3;
-		    bufpoint=0;
-		    bufmiddle=1;
+			bufsize=11;
+		    bufmiddle=5;
 	    }
 	    else if(sensorDelay == sm.SENSOR_DELAY_NORMAL)
 	    {
-			bufsize=3;
-		    bufpoint=0;
-		    bufmiddle=1;
+			bufsize=11;
+		    bufmiddle=5;
 	    }
 	    else if(sensorDelay == sm.SENSOR_DELAY_UI)
 	    {
-			bufsize=3;
-		    bufpoint=0;
+			bufsize=11;
 		    bufmiddle=1;
 	    }	    
-
+	    
+	    bufpoint=0;
 	    azimuthArr = new double[bufsize];
 	    pitchArr= new double[bufsize];
 	    rollArr = new double[bufsize];
+	    
 	}
 	public synchronized void onDrawFrame(GL10 gl) {
+		
+		double tmpAzimuthArr[][] = new double[bufsize][2];
+		double tmpPitchArr[][] = new double[bufsize][2];
+		double tmpRollArr[][] = new double[bufsize][2];
+		float azimuth;
+		float pitch;
+		float roll;
+		synchronized (this) {
+			
+			double pi =Math.PI;
+			double rad2deg = 180/pi;
+			for(int i=0; i < bufsize;i++)
+			{
+				tmpAzimuthArr[i][0]=azimuthArr[i];
+				tmpPitchArr[i][0]=pitchArr[i];
+				tmpRollArr[i][0]=rollArr[i];
+				
+				if(azimuthArr[i]>180)
+				{
+					tmpAzimuthArr[i][1] = 180 - azimuthArr[i]; 
+				}
+				else
+				{
+					tmpAzimuthArr[i][1] = azimuthArr[i];
+				}
+				
+				if(pitchArr[i]>0)
+				{
+					tmpPitchArr[i][1] = 0-pitchArr[i];
+				}
+				else
+				{
+					tmpPitchArr[i][1] = pitchArr[i];
+				}
+				
+				if(rollArr[i]>0)
+				{
+					tmpRollArr[i][1] = 0-rollArr[i];
+				}
+				else
+				{
+					tmpRollArr[i][1] = rollArr[i]; 
+				}
+			}
+		}
+			int fpoint=bufsize-1;
+			for(int i=0; i < bufsize; i++)
+			{
+				for(int j=0;j<fpoint;j++)
+				{
+					if(tmpAzimuthArr[j][1]>tmpAzimuthArr[j+1][1])
+					{
+						double tf=tmpAzimuthArr[j][0];
+						double ts=tmpAzimuthArr[j][1];
+						tmpAzimuthArr[j][0] =tmpAzimuthArr[j+1][0];
+						tmpAzimuthArr[j][1] =tmpAzimuthArr[j+1][1];
+						tmpAzimuthArr[j+1][0] =tf;
+						tmpAzimuthArr[j+1][1] =ts;
+					}
+					if(tmpPitchArr[j][1]>tmpPitchArr[j+1][1])
+					{
+						double tf=tmpPitchArr[j][0];
+						double ts=tmpPitchArr[j][1];
+						tmpPitchArr[j][0] =tmpPitchArr[j+1][0];
+						tmpPitchArr[j][1] =tmpPitchArr[j+1][1];
+						tmpPitchArr[j+1][0] =tf;
+						tmpPitchArr[j+1][1] =ts;
+					}
+					if(tmpRollArr[j][1]>tmpRollArr[j+1][1])
+					{
+						double tf=tmpRollArr[j][0];
+						double ts=tmpRollArr[j][1];
+						tmpRollArr[j][0] =tmpRollArr[j+1][0];
+						tmpRollArr[j][1] =tmpRollArr[j+1][1];
+						tmpRollArr[j+1][0] =tf;
+						tmpRollArr[j+1][1] =ts;
+					}
+				}
+				fpoint--;
+			}
+			
+			Log.e("nonFailure","------------------------------------");
+			Log.e("nonFailure","------------------------------------");
+			Log.e("nonFailure","------------------------------------");
+			for(int i=0; i<bufsize;i++)
+			{
+				Log.e("nonFailure",String.valueOf(tmpAzimuthArr[i][0]));
+			}
+			Log.e("nonFailure","------------------------------------");
+			Log.e("nonFailure","------------------------------------");
+			Log.e("nonFailure","------------------------------------");
+			
+			
+			azimuth = (float) tmpAzimuthArr[bufmiddle][0];
+			pitch = (float) tmpPitchArr[bufmiddle][0];
+			roll = (float) tmpRollArr[bufmiddle][0];
+		
+		
 		if (hasImage) {
 		ArLib.precessImage(frame, azimuth, pitch, roll);
 			this.notify();
@@ -241,32 +335,16 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
             SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
             //Calculate Orientation
             SensorManager.getOrientation(outR, values);
-
-
-            azimuthArr[bufpoint] = Math.toDegrees(values[0]);
-            pitchArr[bufpoint] = Math.toDegrees(values[1]);
-            rollArr[bufpoint] = Math.toDegrees(values[2]);
             
-            if(bufpoint == (bufsize-1))
-            {
-            java.util.Arrays.sort(azimuthArr);
-            java.util.Arrays.sort(pitchArr);
-            java.util.Arrays.sort(rollArr);
-            double tmpAzimuth=0;
-            double tmpPitch=0;
-            double tmpRoll=0;
+            bufpoint=(bufpoint +1)%bufsize;
+
+            azimuthArr[bufpoint] = (Math.toDegrees(values[0])+360)%360;
+            pitchArr[bufpoint] = Math.toDegrees(values[1]);//(Math.toDegrees(values[1])+360)%360;
+            rollArr[bufpoint] = Math.toDegrees(values[2]);//(Math.toDegrees(values[2])+360)%360;
             
-            this.azimuth=(float)azimuthArr[bufmiddle];
-            this.pitch=(float)pitchArr[bufmiddle];
-            this.roll=(float)rollArr[bufmiddle];
-            bufpoint=0;
-            }
-            else
-            {
-            	bufpoint++;
-            }
             mags=null;
             accels=null;
+            
 
         }
         /*
