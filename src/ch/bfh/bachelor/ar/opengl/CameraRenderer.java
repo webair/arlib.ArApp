@@ -28,16 +28,17 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	public byte[] frame = null;
 	public byte[] buffer = null;	
 
+	static final float LOW_PASS_ALPHA = 0.2f;
+	private boolean isLowPass = true;
+	//private boolean isMedian = false;
+	
 	//new getOrientation
+	
 	int sensorDelay;
 	private SensorManager sm;
 	private float[] mags;
 	private float[] accels;
-    private static final int matrix_size = 16;
-    float[] RE = new float[matrix_size];
-    float[] outR = new float[matrix_size];
-    float[] I = new float[matrix_size];
-    float[] values = new float[3]; 
+	/*
 
     double[] azimuthArr;
     double[] pitchArr;
@@ -45,6 +46,17 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
     int bufsize;
     int bufpoint;
 	int bufmiddle;
+	*/
+	float[] values = new float[3]; 
+	
+    private static final int matrix_size = 16;
+    float[] RE = new float[matrix_size];
+    float[] outR = new float[matrix_size];
+    float[] I = new float[matrix_size];
+
+	private float azimuth;
+	private float pitch;
+	private float roll;
 	
 	public boolean hasImage = false;
 	private Camera cam;
@@ -56,9 +68,11 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		
 		
 		sm = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
+		//sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
+		
+		/*
 	    if(sensorDelay == SensorManager.SENSOR_DELAY_FASTEST)
 	    {
 			bufsize=11;
@@ -84,16 +98,21 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	    azimuthArr = new double[bufsize];
 	    pitchArr= new double[bufsize];
 	    rollArr = new double[bufsize];
+	    */
 	    
 	}
+	
 	public synchronized void onDrawFrame(GL10 gl) {
 		
+		/*
+		if (isMedian) {
 		double tmpAzimuthArr[][] = new double[bufsize][2];
 		double tmpPitchArr[][] = new double[bufsize][2];
 		double tmpRollArr[][] = new double[bufsize][2];
 		float azimuth;
 		float pitch;
 		float roll;
+		
 		synchronized (this) {
 			
 			for(int i=0; i < bufsize;i++)
@@ -170,9 +189,14 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 			pitch = (float) tmpPitchArr[bufmiddle][0];
 			roll = (float) tmpRollArr[bufmiddle][0];
 		
-		
+		} else {
+			azimuth = this.azimuth;
+			pitch = this.pitch;
+			roll = this.roll;
+		}
+		*/
 		if (hasImage) {
-		ArLib.precessImage(frame, azimuth, pitch, roll);
+			ArLib.precessImage(frame, azimuth, pitch, roll);
 			this.notify();
 		}
 	}
@@ -289,38 +313,70 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
     }
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
+		Log.i(TAG,String.format("%d", accuracy));
 		
 	}
+	
+	
+	protected float[] lowPass( float[] input, float[] output ) {
+	    if ( output == null ) {
+	    	Log.i(TAG, "not low passed");
+	    	return input;
+	    }
+	    Log.i(TAG, "low passed values");
+	    for ( int i=0; i<input.length; i++ ) {
+	    	//round value to get less shacky values
+	        output[i] = output[i] + LOW_PASS_ALPHA * (input[i] - output[i]);
+	        output[i] = (float)Math.round(output[i] * 10) / 10;
+	    }
+	    return output;
+	}
+	
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		
 		switch (event.sensor.getType())
         {
         	case Sensor.TYPE_MAGNETIC_FIELD:
-            mags = event.values.clone();
+        		
+            	if (isLowPass) {
+                    mags = lowPass(event.values.clone(),mags);
+            	} else {
+            		mags = event.values.clone();
+            	}
             break;
         	case Sensor.TYPE_ACCELEROMETER:
-            accels = event.values.clone();
+        	if (isLowPass) {
+        		accels = lowPass(event.values.clone(),accels);
+        	} else {
+        		accels = event.values.clone();
+        	}
+
             break;
         }
         
         if (mags != null && accels != null) 
         {
+        	
             SensorManager.getRotationMatrix(RE, I, accels, mags);
             // Correct if screen is in Landscape
             SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
             //Calculate Orientation
             SensorManager.getOrientation(outR, values);
+           
             
+            azimuth = (float)Math.toDegrees(values[0]);
+            pitch = (float) Math.toDegrees(values[1]);
+            roll = (float) Math.toDegrees(values[2]);
+            /*
             bufpoint=(bufpoint +1)%bufsize;
-
-            azimuthArr[bufpoint] = (Math.toDegrees(values[0])+360)%360;
+            azimuthArr[bufpoint] = Math.toDegrees(values[0]);
             pitchArr[bufpoint] = Math.toDegrees(values[1]);//(Math.toDegrees(values[1])+360)%360;
             rollArr[bufpoint] = Math.toDegrees(values[2]);//(Math.toDegrees(values[2])+360)%360;
             
             mags=null;
             accels=null;
+            */
             
 
         }
