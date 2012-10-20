@@ -4,6 +4,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include "arLib/model/Model.h"
+#include "arLib/EnvironmentData.h"
 #include <vector>
 
 using namespace std;
@@ -15,13 +16,12 @@ public:
 
 	void setViewport(float offsetX, float offsetY, float width, float height);
 
+	// texture handling
+	GLuint generateTexture();
+	void loadTexture(GLuint glRef, GLubyte* pixels, float width, float height);
+	void renderFrame(EnvironmentData *envData);
 
-
-	void setImageSize(int w, int h);
-	void loadTexture(GLubyte* pixels);
-	void renderFrame();
-
-	//models to draw
+	//obsolete
 	void addModel(Model* m);
 
 private:
@@ -33,30 +33,15 @@ private:
 	GLuint vsTexCoordHandle;
 	GLuint vsProjectionHandle;
 	GLuint vsModelViewMatrixHandle;
-	GLuint fsTextureHandle;
 
-	GLuint textureHandle;
-
-	// screen dimension save this as members so we don't calculate them every time
-	float viewPortWidth;
-	float viewPortHeight;
-	float viewPortRatio;
-
-	float imageWidth;
-	float imageHeight;
-	float imageRatio;
-
-	float frustumNear;
-	float frustumFar;
-	float frustumAngle;
-	float frustumDistanceRatio;
-
+	// camera specific
+	GLuint fsCameraTextureRef;
 
 	static void printGLString(const char *name, GLenum s);
 	static void checkGlError(const char* op);
 
 	//initalization
-	void setupGraphics();
+	void loadPrograms();
 	GLuint loadShader(GLenum shaderType, const char* pSource);
 	void linkProgram(GLuint programHandler);
 

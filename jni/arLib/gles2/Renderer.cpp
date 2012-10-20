@@ -85,7 +85,56 @@ Renderer::Renderer()
 {
 	// 10 should be enough for the moment...
 	models = new vector<Model*>;
-	setupGraphics();
+	printGLString("Version", GL_VERSION);
+	printGLString("Vendor", GL_VENDOR);
+	printGLString("Renderer", GL_RENDERER);
+	printGLString("Extensions", GL_EXTENSIONS);
+
+	GLuint cameraVerticeShaderRef;
+	GLuint cameraFragmentShaderRef;
+
+	GLuint objectVerticeShaderRef;
+	GLuint objectFragmentShaderRef;
+
+	// Load the vertex/fragment shaders
+	cameraVerticeShaderRef = loadShader(GL_VERTEX_SHADER, cameraVerticeShader);
+	cameraFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, cameraFragmentShader);
+	objectVerticeShaderRef = loadShader(GL_VERTEX_SHADER, objectVerticeShader);
+	objectFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, objectFragmentShader);
+
+	// Create the program the camera image
+	cameraProgramRef = glCreateProgram();
+	if (cameraProgramRef == 0) {
+		LOGE("setup graphics failed !!!");
+		return;
+	}
+	// attach the camera shaders
+	glAttachShader(cameraProgramRef, cameraVerticeShaderRef);
+	glAttachShader(cameraProgramRef, cameraFragmentShaderRef);
+	this->linkProgram(cameraProgramRef);
+
+	glUseProgram(cameraProgramRef);
+
+	// Use tightly packed data
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	// Create the program the objects
+	objectProgramRef = glCreateProgram();
+	if (objectProgramRef == 0) {
+		LOGE("setup graphics failed !!!");
+		return;
+	}
+	// attach the camera shaders
+	glAttachShader(objectProgramRef, objectVerticeShaderRef);
+	glAttachShader(objectProgramRef, objectFragmentShaderRef);
+	this->linkProgram(objectProgramRef);
+
+
+	vsPositionHandle = glGetAttribLocation(cameraProgramRef, "a_position");
+	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
+    fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
+    vsProjectionHandle = glGetUniformLocation(objectProgramRef, "u_projection");
+    vsModelViewMatrixHandle = glGetUniformLocation(objectProgramRef, "u_modelViewMatrix");
 
 }
 
@@ -94,18 +143,124 @@ Renderer::~Renderer()
 	delete models;
 }
 
+// interface methods
 void Renderer::setViewport(float offsetX, float offsetY, float width, float height)
 {
 	glViewport(offsetX, offsetY, width, height);
+    checkGlError("glViewport");
+
+	LOGI("viewport width: %f", width);
+	LOGI("viewport height: %f", height);
+}
+
+GLuint Renderer::generateTexture() {
+	// TODO: has to be improved when objects contains textures
+	GLuint textureRef;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &textureRef);
+    checkGlError("glGenTextures");
+	return textureRef;
+}
+
+void Renderer::loadTexture(GLuint glRef, GLubyte* pixels, float width, float height) {
+    // Bind the texture
+    glActiveTexture(GL_TEXTURE0);
+    checkGlError("glActiveTexture");
+
+    // Bind the texture object
+    glBindTexture(GL_TEXTURE_2D, glRef);
+    checkGlError("glBindTexture");
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+             GL_UNSIGNED_BYTE, pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    checkGlError("glGetAttribLocation");
+}
+
+void Renderer::renderFrame(EnvironmentData *envData) {
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    checkGlError("glClearColor");
+    glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
+
+    glUseProgram(cameraProgramRef);
+    checkGlError("glUseProgram");
+
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gCameraQuad);
+    checkGlError("glVertexAttribPointer");
+    glVertexAttribPointer(vsTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gCameraTexCoord);
+    checkGlError("glVertexAttribPointer");
+
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+
+    glEnableVertexAttribArray(vsTexCoordHandle);
+    checkGlError("glEnableVertexAttribArray");
+
+    // Set the sampler texture unit to 0
+    glUniform1i(fsCameraTextureRef, 0);
+    checkGlError("fsCameraTextureRef");
+    glBindTexture(GL_TEXTURE_2D, envData->cameraTextrueRef);
+    checkGlError("glBindTexture");
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    checkGlError("glDrawArrays");
+    /*
+    glUseProgram(objectProgramRef);
+
+    glm::mat4 Projection = envData->getProjection();
+	//Projection = glm::rotate(Projection, angle, glm::vec3(0.0, 1.0, 0.0));
+	//glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, glm::value_ptr(Projection));
+    //Rotate it
+    Model* m = models->at(0);
+    glm::mat4 View = *m->modelView;
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
+    View = glm::rotate(View, angle, glm::vec3(0.0, 1.0, 0.0));
+    View = glm::translate(View, glm::vec3(0.0, 0.0, 5.0));
+
+    View = Projection * View;
+    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
+
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
+    checkGlError("glVertexAttribPointer");
+
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+
+    glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
+    checkGlError("glDrawArrays");
+
+    m = models->at(1);
+    View = *m->modelView;
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
+    View = glm::rotate(View, angle, glm::vec3(1.0, 0.0, 0.0));
+    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
+
+    View = Projection * View;
+    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
+
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
+    checkGlError("glVertexAttribPointer");
+
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+
+    glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
+    checkGlError("glDrawArrays");
+	*/
+	/*
+	//calculate FPS
+	 struct timespec res;
+	 clock_gettime(CLOCK_MONOTONIC, &res);
+
+	 double currentTime = 1000.0*res.tv_sec + (double)res.tv_nsec/1e6;
+	 double timeDelta = currentTime-lastTime;
+	 lastTime = currentTime;
+	 //LOGI("FPS: %f",timeDelta);
+	  */
 }
 
 
-
-void Renderer::setImageSize(int w, int h) {
-	imageWidth = (float) w;
-	imageHeight = (float) h;
-	imageRatio = w/h;
-}
 
 
 GLuint Renderer::loadShader(GLenum shaderType, const char* pSource) {
@@ -154,179 +309,6 @@ void Renderer::linkProgram(GLuint programHandler) {
 		return;
 	}
 
-}
-
-void Renderer::setupGraphics() {
-	frustumAngle = 30.0f;
-	frustumNear = 1.0f;
-	frustumFar = 100.0f;
-	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
-
-    LOGI("setup graphics:");
-    LOGI("frustum near: %f", frustumNear);
-    LOGI("frustum far: %f", frustumFar);
-    LOGI("frustum angle: %f", frustumAngle);
-    LOGI("frustum distance ratio: %f", frustumDistanceRatio);
-
-	printGLString("Version", GL_VERSION);
-	printGLString("Vendor", GL_VENDOR);
-	printGLString("Renderer", GL_RENDERER);
-	printGLString("Extensions", GL_EXTENSIONS);
-
-	GLuint cameraVerticeShaderRef;
-	GLuint cameraFragmentShaderRef;
-
-	GLuint objectVerticeShaderRef;
-	GLuint objectFragmentShaderRef;
-
-	// Load the vertex/fragment shaders
-	cameraVerticeShaderRef = loadShader(GL_VERTEX_SHADER, cameraVerticeShader);
-	cameraFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, cameraFragmentShader);
-	objectVerticeShaderRef = loadShader(GL_VERTEX_SHADER, objectVerticeShader);
-	objectFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, objectFragmentShader);
-
-	// Create the program the camera image
-	cameraProgramRef = glCreateProgram();
-	if (cameraProgramRef == 0) {
-		LOGE("setup graphics failed !!!");
-		return;
-	}
-	// attach the camera shaders
-	glAttachShader(cameraProgramRef, cameraVerticeShaderRef);
-	glAttachShader(cameraProgramRef, cameraFragmentShaderRef);
-	this->linkProgram(cameraProgramRef);
-
-	// Create the program the objects
-	objectProgramRef = glCreateProgram();
-	if (objectProgramRef == 0) {
-		LOGE("setup graphics failed !!!");
-		return;
-	}
-	// attach the camera shaders
-	glAttachShader(objectProgramRef, objectVerticeShaderRef);
-	glAttachShader(objectProgramRef, objectFragmentShaderRef);
-	this->linkProgram(objectProgramRef);
-
-
-	vsPositionHandle = glGetAttribLocation(cameraProgramRef, "a_position");
-	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
-    fsTextureHandle = glGetUniformLocation(cameraProgramRef, "s_texture");
-    vsProjectionHandle = glGetUniformLocation(objectProgramRef, "u_projection");
-    vsModelViewMatrixHandle = glGetUniformLocation(objectProgramRef, "u_modelViewMatrix");
-
-	glUseProgram(cameraProgramRef);
-	// Use tightly packed data
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	// Generate a texture object
-    glGenTextures(1, &textureHandle);
-}
-
-void Renderer::loadTexture(GLubyte* pixels) {
-
-
-    // Bind the texture
-    glActiveTexture(GL_TEXTURE0);
-    checkGlError("glActiveTexture");
-
-    // Bind the texture object
-    glBindTexture(GL_TEXTURE_2D, textureHandle);
-    checkGlError("glBindTexture");
-
-     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA,
-             GL_UNSIGNED_BYTE, pixels);
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-      checkGlError("glGetAttribLocation");
-
-
-
-}
-
-void Renderer::renderFrame() {
-
-	static float angle = 0.0f;
-	angle += 1.0f;
-	if (angle >= 360.0f)
-		angle = 0.0f;
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    checkGlError("glClearColor");
-    glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    checkGlError("glClear");
-
-    glUseProgram(cameraProgramRef);
-    checkGlError("glUseProgram");
-
-    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gCameraQuad);
-    checkGlError("glVertexAttribPointer");
-    glVertexAttribPointer(vsTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gCameraTexCoord);
-    checkGlError("glVertexAttribPointer");
-
-    glEnableVertexAttribArray(vsPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
-
-    glEnableVertexAttribArray(vsTexCoordHandle);
-    checkGlError("glEnableVertexAttribArray");
-
-    // Set the sampler texture unit to 0
-    glUniform1i(fsTextureHandle, 0);
-    checkGlError("fsTextureHandle");
-    glBindTexture(GL_TEXTURE_2D, textureHandle);
-    checkGlError("glBindTexture");
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    checkGlError("glDrawArrays");
-
-    glUseProgram(objectProgramRef);
-
-    glm::mat4 Projection = glm::perspective(frustumAngle, imageRatio, frustumNear, frustumFar);
-	//Projection = glm::rotate(Projection, angle, glm::vec3(0.0, 1.0, 0.0));
-	//glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, glm::value_ptr(Projection));
-    //Rotate it
-    Model* m = models->at(0);
-    glm::mat4 View = *m->modelView;
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-    View = glm::rotate(View, angle, glm::vec3(0.0, 1.0, 0.0));
-    View = glm::translate(View, glm::vec3(0.0, 0.0, 5.0));
-
-    View = Projection * View;
-    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
-
-    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
-    checkGlError("glVertexAttribPointer");
-
-    glEnableVertexAttribArray(vsPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
-
-    glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
-    checkGlError("glDrawArrays");
-
-    m = models->at(1);
-    View = *m->modelView;
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-    View = glm::rotate(View, angle, glm::vec3(1.0, 0.0, 0.0));
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-
-    View = Projection * View;
-    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
-
-    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
-    checkGlError("glVertexAttribPointer");
-
-    glEnableVertexAttribArray(vsPositionHandle);
-    checkGlError("glEnableVertexAttribArray");
-
-    glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
-    checkGlError("glDrawArrays");
-
-	/*
-	//calculate FPS
-	 struct timespec res;
-	 clock_gettime(CLOCK_MONOTONIC, &res);
-
-	 double currentTime = 1000.0*res.tv_sec + (double)res.tv_nsec/1e6;
-	 double timeDelta = currentTime-lastTime;
-	 lastTime = currentTime;
-	 //LOGI("FPS: %f",timeDelta);
-	  */
 }
 
 // adding models

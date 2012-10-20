@@ -2,6 +2,7 @@
 #include "util/Logger.h"
 
 
+
 ArLib::ArLib(Renderer* r,
 		int viewportWidth,
 		int viewportHeight,
@@ -9,36 +10,42 @@ ArLib::ArLib(Renderer* r,
 		int imageHeight,
 		float verticalAngle)
 {
+	this->envData = new EnvironmentData();
 	renderer = r;
-	this->imageWidth = (float) imageWidth;
-	this->imageHeight = (float) imageHeight;
-	this->imageRatio = imageWidth / imageHeight;
-	this->frustumAngle = verticalAngle;
+	Dimension dimension;
+	dimension.width = (float) imageWidth;
+	dimension.height = (float) imageHeight;
+	envData->setImageDimension(dimension);
+	envData->setVerticalAngle(verticalAngle);
 
 	createViewport((float) viewportWidth, (float) viewportHeight);
-	createBaseProjection();
+
+	// create camera texture
+	envData->cameraTextrueRef = r->generateTexture();
+
+	LOGI("generate camera texture: ref=%d", envData->cameraTextrueRef);
 }
 
 void ArLib::createViewport(float availableWidth, float availableHeight)
 {
 	float viewPortWidth = availableWidth;
 	float viewPortHeight = availableHeight;
+	Dimension imageDimension = envData->getImageDimension();
 
 	//convert height propotion, so that the image does not get
-	if (viewPortHeight > imageHeight) {
-		viewPortHeight = imageHeight;
+	if (viewPortHeight > imageDimension.width) {
+		viewPortHeight = imageDimension.height;
 	}
-	viewPortWidth = (imageWidth / imageHeight) * viewPortHeight;
-	if (viewPortWidth > imageWidth) {
-		viewPortWidth = imageWidth;
-		viewPortHeight = (imageHeight / imageWidth) * viewPortWidth;
+	viewPortWidth = envData->getImageRatio() * viewPortHeight;
+	if (viewPortWidth > imageDimension.width) {
+		viewPortWidth = imageDimension.width;
+		viewPortHeight = (imageDimension.height / imageDimension.width) * viewPortWidth;
 	}
 
-	LOGI("image width: %f", imageWidth);
-	LOGI("image width: %f", imageHeight);
-	LOGI("image ratio: %f", imageRatio);
-	LOGI("viewport width: %f", viewPortWidth);
-	LOGI("viewport height: %f", viewPortHeight);
+	LOGI("image width: %f", imageDimension.width);
+	LOGI("image width: %f", imageDimension.height);
+	LOGI("image ratio: %f", envData->getImageRatio());
+	LOGI("image RGBA size: %d", envData->getImageRGBASize());
 
 	renderer->setViewport(
 			(availableWidth-viewPortWidth)/2,
@@ -48,18 +55,20 @@ void ArLib::createViewport(float availableWidth, float availableHeight)
 	);
 }
 
-void ArLib::createBaseProjection()
+void ArLib::processImage(unsigned char *imageData)
 {
-	frustumNear = 1.0f;
-	frustumFar = 100.0f;
-	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
+	//TODO optimize
+	Dimension imageDimension = envData->getImageDimension();
 
-    LOGI("setup graphics:");
-    LOGI("frustum near: %f", frustumNear);
-    LOGI("frustum far: %f", frustumFar);
-    LOGI("frustum angle: %f", frustumAngle);
-    LOGI("frustum distance ratio: %f", frustumDistanceRatio);
+	int imageWidth = (int) imageDimension.width;
+	int imageHeight = (int) imageDimension.height;
 
-    glm::mat4 projection = glm::perspective(frustumAngle, imageRatio, frustumNear, frustumFar);
-    baseProjection = new glm::mat4(projection);
+	Mat yuv(imageHeight + imageHeight/2, imageWidth, CV_8UC1, (unsigned char *)imageData);
+	unsigned char* rgbaRaw = (unsigned char *)malloc(envData->getImageRGBASize() * sizeof(unsigned char));
+	Mat rgba(imageHeight, imageWidth, CV_8UC4, rgbaRaw);
+	cvtColor(yuv, rgba, CV_YUV420sp2RGBA);
+
+	renderer->loadTexture(envData->cameraTextrueRef,rgbaRaw, imageDimension.width, imageDimension.height);
+	renderer->renderFrame(envData);
+	free(rgbaRaw);
 }

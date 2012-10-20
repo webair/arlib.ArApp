@@ -9,12 +9,15 @@ import javax.microedition.khronos.opengles.GL10;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import ch.bfh.bachelor.ar.ArLib;
 
 public class CameraRenderer implements GLSurfaceView.Renderer,
-		android.hardware.Camera.PreviewCallback {
+		android.hardware.Camera.PreviewCallback, SensorEventListener {
     private static final String TAG = "CameraRenderer";
     
 	public int frameWidth = 0;
@@ -146,5 +149,17 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
             }
         }
     }
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
