@@ -5,6 +5,7 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import android.app.Activity;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,7 +28,7 @@ public class MainActivity extends Activity {
 					Log.i(TAG, "OpenCV loaded successfully");
 
 					//instantiate open gl renderer
-					cr = new CameraRenderer();
+					cr = new CameraRenderer(MainActivity.this);
 					
 					View mainView = new OpenGLSurfaceView(getApplication(), cr);					
 					setContentView(mainView);
@@ -45,6 +46,7 @@ public class MainActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		
         if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_2, this, mOpenCVCallBack))
         {
