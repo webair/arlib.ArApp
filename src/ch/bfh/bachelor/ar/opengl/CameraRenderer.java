@@ -1,7 +1,6 @@
 package ch.bfh.bachelor.ar.opengl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -15,7 +14,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import ch.bfh.bachelor.ar.ArLib;
@@ -35,7 +33,6 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	private SensorManager sm;
 	private float[] mags;
 	private float[] accels;
-	private float[] gyro;
     private static final int matrix_size = 16;
     float[] RE = new float[matrix_size];
     float[] outR = new float[matrix_size];
@@ -55,29 +52,29 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	public CameraRenderer(Context context)
 	{
 		//CHANGE SENSOR DELAY HERE!
-		sensorDelay = sm.SENSOR_DELAY_FASTEST;
+		sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
 		
 		
-		sm = (SensorManager)context.getSystemService(context.SENSOR_SERVICE);
+		sm = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
-	    if(sensorDelay == sm.SENSOR_DELAY_FASTEST)
+	    if(sensorDelay == SensorManager.SENSOR_DELAY_FASTEST)
 	    {
 			bufsize=11;
 		    bufmiddle=5;
 	    }
-	    else if(sensorDelay == sm.SENSOR_DELAY_GAME)
+	    else if(sensorDelay == SensorManager.SENSOR_DELAY_GAME)
 	    {
 			bufsize=11;
 		    bufmiddle=5;
 	    }
-	    else if(sensorDelay == sm.SENSOR_DELAY_NORMAL)
+	    else if(sensorDelay == SensorManager.SENSOR_DELAY_NORMAL)
 	    {
 			bufsize=11;
 		    bufmiddle=5;
 	    }
-	    else if(sensorDelay == sm.SENSOR_DELAY_UI)
+	    else if(sensorDelay == SensorManager.SENSOR_DELAY_UI)
 	    {
 			bufsize=11;
 		    bufmiddle=1;
@@ -99,8 +96,6 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		float roll;
 		synchronized (this) {
 			
-			double pi =Math.PI;
-			double rad2deg = 180/pi;
 			for(int i=0; i < bufsize;i++)
 			{
 				tmpAzimuthArr[i][0]=azimuthArr[i];
@@ -307,10 +302,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
             break;
         	case Sensor.TYPE_ACCELEROMETER:
             accels = event.values.clone();
-            break;     
-        	case Sensor.TYPE_GYROSCOPE:
-        	gyro = event.values.clone();
-        	break;
+            break;
         }
         
         if (mags != null && accels != null) 
