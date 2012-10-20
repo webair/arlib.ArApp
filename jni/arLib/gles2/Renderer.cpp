@@ -179,6 +179,11 @@ void Renderer::loadTexture(GLuint glRef, GLubyte* pixels, float width, float hei
 
 void Renderer::renderFrame(EnvironmentData *envData) {
 
+	static float angle = 0.0f;
+	angle += 0.5f;
+	if (angle >= 360.0f)
+		angle = 0.0f;
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     checkGlError("glClearColor");
     glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -205,20 +210,12 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     checkGlError("glBindTexture");
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
-    /*
-    glUseProgram(objectProgramRef);
 
     glm::mat4 Projection = envData->getProjection();
-	//Projection = glm::rotate(Projection, angle, glm::vec3(0.0, 1.0, 0.0));
-	//glUniformMatrix4fv(vsProjectionHandle, 1, GL_FALSE, glm::value_ptr(Projection));
-    //Rotate it
-    Model* m = models->at(0);
-    glm::mat4 View = *m->modelView;
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-    View = glm::rotate(View, angle, glm::vec3(0.0, 1.0, 0.0));
-    View = glm::translate(View, glm::vec3(0.0, 0.0, 5.0));
+    glUseProgram(objectProgramRef);
 
-    View = Projection * View;
+    Model* m = models->at(0);
+    glm::mat4 View = Projection * (*m->modelView);
     glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
 
     glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
@@ -229,14 +226,13 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 
     glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
     checkGlError("glDrawArrays");
-
+    /*
     m = models->at(1);
-    View = *m->modelView;
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-    View = glm::rotate(View, angle, glm::vec3(1.0, 0.0, 0.0));
-    View = glm::translate(View, glm::vec3(0.0, 0.0, -5.0));
-
+    //View = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
+    //View = glm::translate(View, glm::vec3(0.0, 0.0, -13.0));
+    View = (*m->modelView);
     View = Projection * View;
+
     glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
 
     glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);

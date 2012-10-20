@@ -7,6 +7,7 @@
 #include "arLib/gles2/Renderer.h"
 #include "arLib/ArLib.h"
 #include "arLib/EnvironmentData.h"
+#include "arLib/Definitions.h"
 
 
 
@@ -44,14 +45,14 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		//test adding models
 		Model *myModel = new Cube;
 	    glm::mat4 View = glm::mat4(1.0);
-	    View = glm::translate(View, glm::vec3(0.0, 0.0, -25.0));
+	    View = glm::translate(View, glm::vec3(0.0, 0.0, -26.0));
 	    myModel->modelView = new glm::mat4(View);
 		r->addModel(myModel);
 
 		//test adding models
 		Model *myModel2 = new Cube;
 	    glm::mat4 View2 = glm::mat4(1.0);
-	    View2 = glm::translate(View2, glm::vec3(0.0, 0.0, -25.0));
+	    View2 = glm::translate(View2, glm::vec3(0.0, 0.0, -26.0));
 	    myModel2->modelView = new glm::mat4(View2);
 		r->addModel(myModel2);
 	}
@@ -60,6 +61,11 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
   (JNIEnv *env, jclass obj, jbyteArray yuvImageArray, jfloat azimuth, jfloat pitch, jfloat roll)
 	{
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
+		Orientation orientation;
+		orientation.azimuth = (float)azimuth;
+		orientation.roll = (float) roll;
+		orientation.pitch = (float) pitch;
+		arLib->setDeviceOrientation(orientation);
 		arLib->processImage((unsigned char *)yuvRaw);
 	    env->ReleaseByteArrayElements(yuvImageArray, yuvRaw, 0);
 	}

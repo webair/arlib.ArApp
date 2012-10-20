@@ -14,12 +14,8 @@ import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-<<<<<<< HEAD
-=======
 import android.hardware.SensorManager;
 
-
->>>>>>> 4a15e1477906942e6cec5c0b45affaba81134f65
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import ch.bfh.bachelor.ar.ArLib;
@@ -175,9 +171,9 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 				fpoint--;
 			}
 			
-			azimuth = (float) Math.toRadians(tmpAzimuthArr[bufmiddle][0]);
-			pitch = (float) Math.toRadians(tmpPitchArr[bufmiddle][0]);
-			roll = (float) Math.toRadians(tmpRollArr[bufmiddle][0]);
+			azimuth = (float) tmpAzimuthArr[bufmiddle][0];
+			pitch = (float) tmpPitchArr[bufmiddle][0];
+			roll = (float) tmpRollArr[bufmiddle][0];
 		
 		
 		if (hasImage) {
@@ -303,9 +299,6 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	}
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		
-		
-		
 		
 		switch (event.sensor.getType())
         {

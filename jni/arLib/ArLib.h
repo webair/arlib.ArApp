@@ -39,9 +39,7 @@ public:
 	void processImage(unsigned char *imageData);
 
 	//device states
-	void setAzimuth(float azimuth);
-	void setPitch(float pitch);
-	void setRoll(float roll);
+	void setDeviceOrientation(Orientation orientation);
 
 	//getters
 	vector<Model*>* getModels();

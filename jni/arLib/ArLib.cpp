@@ -55,6 +55,10 @@ void ArLib::createViewport(float availableWidth, float availableHeight)
 	);
 }
 
+void ArLib::setDeviceOrientation(Orientation orientation) {
+	envData->setDeviceOrientation(orientation);
+}
+
 void ArLib::processImage(unsigned char *imageData)
 {
 	//TODO optimize

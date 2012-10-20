@@ -6,7 +6,7 @@
 using namespace std;
 
 Model::Model() {
-	verticesSize = 72;
+	verticesSize = 108;
 	vertices = (GLfloat *) new GLfloat[verticesSize];
 	centerPoint[0] = 0.0f;
 	centerPoint[1] = 0.0f;

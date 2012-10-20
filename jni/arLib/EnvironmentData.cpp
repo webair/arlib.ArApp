@@ -70,5 +70,9 @@ Orientation EnvironmentData::getDeviceOrientation()
 
 glm::mat4 EnvironmentData::getProjection()
 {
-	return mat4(1.0);
+	mat4 proj = *this->baseProjection;
+	mat4 rotation = rotate(mat4(1.0f), deviceOrientation.azimuth, glm::vec3(0.0f, 1.0f, 0.0f));
+	rotation = rotate(rotation, deviceOrientation.pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+	rotation = rotate(rotation, deviceOrientation.roll, glm::vec3(0.0f, 0.0f, 1.0f));
+	return proj * rotation;
 }
