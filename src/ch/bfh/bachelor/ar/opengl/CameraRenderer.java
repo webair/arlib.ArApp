@@ -34,6 +34,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	private float roll;
 
 	//new getOrientation
+	int sensorDelay;
 	private SensorManager sm;
 	private float[] mags;
 	private float[] accels;
@@ -49,19 +50,45 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
     double[] rollArr;
     int bufsize;
     int bufpoint;
+	int bufmiddle;
 	
 	public boolean hasImage = false;
 	private Camera cam;
 	
 	public CameraRenderer(Context context)
 	{
+		//CHANGE SENSOR DELAY HERE!
+		sensorDelay = sm.SENSOR_DELAY_FASTEST;
+		
+		
 		sm = (SensorManager)context.getSystemService(context.SENSOR_SERVICE);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sm.SENSOR_DELAY_NORMAL);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sm.SENSOR_DELAY_GAME);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sm.SENSOR_DELAY_GAME);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sm.SENSOR_DELAY_NORMAL);
-	    bufsize=20;
-	    bufpoint=0;
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
+	    if(sensorDelay == sm.SENSOR_DELAY_FASTEST)
+	    {
+			bufsize=3;
+		    bufpoint=0;
+	    }
+	    else if(sensorDelay == sm.SENSOR_DELAY_GAME)
+	    {
+			bufsize=3;
+		    bufpoint=0;
+		    bufmiddle=1;
+	    }
+	    else if(sensorDelay == sm.SENSOR_DELAY_NORMAL)
+	    {
+			bufsize=3;
+		    bufpoint=0;
+		    bufmiddle=1;
+	    }
+	    else if(sensorDelay == sm.SENSOR_DELAY_UI)
+	    {
+			bufsize=3;
+		    bufpoint=0;
+		    bufmiddle=1;
+	    }	    
+
 	    azimuthArr = new double[bufsize];
 	    pitchArr= new double[bufsize];
 	    rollArr = new double[bufsize];
@@ -229,9 +256,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
             double tmpPitch=0;
             double tmpRoll=0;
             
-            this.azimuth=(float)azimuthArr[(azimuthArr.length/2)-1];
-            this.pitch=(float)pitchArr[(pitchArr.length/2)-1];
-            this.roll=(float)rollArr[(rollArr.length/2)-1];
+            this.azimuth=(float)azimuthArr[bufmiddle];
+            this.pitch=(float)pitchArr[bufmiddle];
+            this.roll=(float)rollArr[bufmiddle];
             bufpoint=0;
             }
             else
@@ -242,8 +269,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
             accels=null;
 
         }
-        
-        
         /*
         if(gyro != null)
         {
@@ -255,7 +280,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
         		//outputOrTv3.setText(Double.toString(Math.round(Math.toDegrees(gyro[2])))+deg);
             gyro=null;
         }*/
-		
 	}
 
 }
