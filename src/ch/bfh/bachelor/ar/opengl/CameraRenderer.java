@@ -23,13 +23,17 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 
     private static final String TAG = "CameraRenderer";
     
+    //switches
+	public boolean isSensorCorrectionEnabled = true;
+	public boolean isSensorRoundingEnabled = false;
+    
 	public int frameWidth = 0;
 	public int frameHeight = 0;
 	public byte[] frame = null;
 	public byte[] buffer = null;	
 
-	static final float LOW_PASS_ALPHA = 0.2f;
-	private boolean isLowPass = true;
+	static final float LOW_PASS_ALPHA = 0.15f;
+
 	//private boolean isMedian = false;
 	
 	//new getOrientation
@@ -38,6 +42,14 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	private SensorManager sm;
 	private float[] mags;
 	private float[] accels;
+	float[] values = new float[3]; 
+    private static final int matrix_size = 16;
+    float[] RE = new float[matrix_size];
+    float[] outR = new float[matrix_size];
+    float[] I = new float[matrix_size];
+	private float azimuth;
+	private float pitch;
+	private float roll;
 	/*
 
     double[] azimuthArr;
@@ -47,16 +59,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
     int bufpoint;
 	int bufmiddle;
 	*/
-	float[] values = new float[3]; 
-	
-    private static final int matrix_size = 16;
-    float[] RE = new float[matrix_size];
-    float[] outR = new float[matrix_size];
-    float[] I = new float[matrix_size];
 
-	private float azimuth;
-	private float pitch;
-	private float roll;
 	
 	public boolean hasImage = false;
 	private Camera cam;
@@ -318,7 +321,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	}
 	
 	
-	protected float[] lowPass( float[] input, float[] output ) {
+	protected float[] correctSensorValues( float[] input, float[] output ) {
 	    if ( output == null ) {
 	    	Log.i(TAG, "not low passed");
 	    	return input;
@@ -327,7 +330,9 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	    for ( int i=0; i<input.length; i++ ) {
 	    	//round value to get less shacky values
 	        output[i] = output[i] + LOW_PASS_ALPHA * (input[i] - output[i]);
-	        output[i] = (float)Math.round(output[i] * 10) / 10;
+	        if (isSensorRoundingEnabled) {
+	        	output[i] = (float)Math.round(output[i] * 10) / 10;
+	        }
 	    }
 	    return output;
 	}
@@ -339,15 +344,15 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         {
         	case Sensor.TYPE_MAGNETIC_FIELD:
         		
-            	if (isLowPass) {
-                    mags = lowPass(event.values.clone(),mags);
+            	if (isSensorCorrectionEnabled) {
+                    mags = correctSensorValues(event.values.clone(),mags);
             	} else {
             		mags = event.values.clone();
             	}
             break;
         	case Sensor.TYPE_ACCELEROMETER:
-        	if (isLowPass) {
-        		accels = lowPass(event.values.clone(),accels);
+        	if (isSensorCorrectionEnabled) {
+        		accels = correctSensorValues(event.values.clone(),accels);
         	} else {
         		accels = event.values.clone();
         	}
@@ -359,7 +364,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         {
         	
             SensorManager.getRotationMatrix(RE, I, accels, mags);
-            // Correct if screen is in Landscape
+            // remap fo landscape 
             SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
             //Calculate Orientation
             SensorManager.getOrientation(outR, values);

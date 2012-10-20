@@ -8,7 +8,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import ch.bfh.bachelor.ar.opengl.CameraRenderer;
 import ch.bfh.bachelor.ar.opengl.OpenGLSurfaceView;
 
@@ -51,12 +53,6 @@ public class MainActivity extends Activity {
         }
 
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
 	
 	@Override
 	protected void onResume() {
@@ -69,4 +65,29 @@ public class MainActivity extends Activity {
 		super.onPause();
 		cr.releaseCamera();
 	}
+	
+	//menu
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
+	
+   @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    { 	
+    	//check selected menu item
+    	// R.id.exit is @+id/exit
+    	if(item.getItemId() == R.id.menu_sensorCorrection){
+    		cr.isSensorCorrectionEnabled = !cr.isSensorCorrectionEnabled;
+    		if (cr.isSensorCorrectionEnabled)
+    			item.setTitle(R.string.menu_sensorCorrection_off);
+    		else
+    			item.setTitle(R.string.menu_sensorCorrection_on);
+    		item.setChecked(cr.isSensorCorrectionEnabled);
+    	}
+    	return false;
+    }
+	
+		
 }

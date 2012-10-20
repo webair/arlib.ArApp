@@ -1,8 +1,8 @@
 <resources>
 
     <string name="app_name">ARApp</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
+    <string name="menu_sensorCorrection_on">turn sensor correction on</string>
+        <string name="menu_sensorCorrection_off">turn sensor correction off</string>
     <string name="title_activity_main">MainActivity</string>
 
 </resources>
