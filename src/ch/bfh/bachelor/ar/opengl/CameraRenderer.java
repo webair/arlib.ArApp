@@ -171,21 +171,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 				fpoint--;
 			}
 			
-			Log.e("nonFailure","------------------------------------");
-			Log.e("nonFailure","------------------------------------");
-			Log.e("nonFailure","------------------------------------");
-			for(int i=0; i<bufsize;i++)
-			{
-				Log.e("nonFailure",String.valueOf(tmpAzimuthArr[i][0]));
-			}
-			Log.e("nonFailure","------------------------------------");
-			Log.e("nonFailure","------------------------------------");
-			Log.e("nonFailure","------------------------------------");
-			
-			
-			azimuth = (float) tmpAzimuthArr[bufmiddle][0];
-			pitch = (float) tmpPitchArr[bufmiddle][0];
-			roll = (float) tmpRollArr[bufmiddle][0];
+			azimuth = (float) Math.toRadians(tmpAzimuthArr[bufmiddle][0]);
+			pitch = (float) Math.toRadians(tmpPitchArr[bufmiddle][0]);
+			roll = (float) Math.toRadians(tmpRollArr[bufmiddle][0]);
 		
 		
 		if (hasImage) {
