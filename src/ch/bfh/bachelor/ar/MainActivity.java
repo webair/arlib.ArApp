@@ -86,6 +86,22 @@ public class MainActivity extends Activity {
     			item.setTitle(R.string.menu_sensorCorrection_on);
     		item.setChecked(cr.isSensorCorrectionEnabled);
     	}
+    	if(item.getItemId() == R.id.menu_sensorBuffer){
+    		cr.isSensorBufferingEnable = !cr.isSensorBufferingEnable;
+    		if (cr.isSensorBufferingEnable)
+    			item.setTitle(R.string.menu_sensorBuffer_off);
+    		else
+    			item.setTitle(R.string.menu_sensorBuffer_on);
+    		item.setChecked(cr.isSensorBufferingEnable);
+    	}
+    	if(item.getItemId() == R.id.menu_gyroCorrection){
+    		cr.isGyroCorrectionEnable = !cr.isGyroCorrectionEnable;
+    		if (cr.isGyroCorrectionEnable)
+    			item.setTitle(R.string.menu_gyroCorrection_off);
+    		else
+    			item.setTitle(R.string.menu_gyroCorrection_on);
+    		item.setChecked(cr.isGyroCorrectionEnable);
+    	}
     	return false;
     }
 	

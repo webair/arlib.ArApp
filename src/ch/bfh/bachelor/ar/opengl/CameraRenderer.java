@@ -26,6 +26,8 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
     //switches
 	public boolean isSensorCorrectionEnabled = true;
 	public boolean isSensorRoundingEnabled = false;
+	public boolean isSensorBufferingEnable = true;
+	public boolean isGyroCorrectionEnable = true;
     
 	public int frameWidth = 0;
 	public int frameHeight = 0;
@@ -34,7 +36,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 
 	static final float LOW_PASS_ALPHA = 0.15f;
 
-	//private boolean isMedian = false;
+	private float cameraAngleVertical;
 	
 	//new getOrientation
 	
@@ -42,6 +44,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	private SensorManager sm;
 	private float[] mags;
 	private float[] accels;
+	private float[] gyro;
 	float[] values = new float[3]; 
     private static final int matrix_size = 16;
     float[] RE = new float[matrix_size];
@@ -50,154 +53,67 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	private float azimuth;
 	private float pitch;
 	private float roll;
-	/*
-
-    double[] azimuthArr;
-    double[] pitchArr;
-    double[] rollArr;
-    int bufsize;
-    int bufpoint;
-	int bufmiddle;
-	*/
-
 	
+	
+	//SensorBuffering
+	private int bufferSize;
+	private int bufferMiddle;
+	private int bufferPoint;
+	private float[] aA;
+	private float[] pA;
+	private float[] rA;
+	
+	//Gyroscope Correction
+	private boolean isMoving;
+	private float gyroThresholdA;
+	private float gyroThresholdB;
+	private float gyroThresholdC;
+	private int bufferSizeg;
+	private int bufferMiddleg;
+	private int bufferPointg;
+	private float[] aAg;
+	private float[] pAg;
+	private float[] rAg;
+
 	public boolean hasImage = false;
 	private Camera cam;
 	
 	public CameraRenderer(Context context)
 	{
-		//CHANGE SENSOR DELAY HERE!
+		//Change Sensor Delay Here
 		sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
-		
-		
 		sm = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-		//sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
 		
-		/*
-	    if(sensorDelay == SensorManager.SENSOR_DELAY_FASTEST)
-	    {
-			bufsize=11;
-		    bufmiddle=5;
-	    }
-	    else if(sensorDelay == SensorManager.SENSOR_DELAY_GAME)
-	    {
-			bufsize=11;
-		    bufmiddle=5;
-	    }
-	    else if(sensorDelay == SensorManager.SENSOR_DELAY_NORMAL)
-	    {
-			bufsize=11;
-		    bufmiddle=5;
-	    }
-	    else if(sensorDelay == SensorManager.SENSOR_DELAY_UI)
-	    {
-			bufsize=11;
-		    bufmiddle=1;
-	    }	    
-	    
-	    bufpoint=0;
-	    azimuthArr = new double[bufsize];
-	    pitchArr= new double[bufsize];
-	    rollArr = new double[bufsize];
-	    */
-	    
+		
+		
+		if(isSensorBufferingEnable)
+		{
+			bufferSize=5;
+			bufferMiddle=(bufferSize-1)/2;
+			bufferPoint=0;
+			aA = new float[bufferSize];
+			pA = new float[bufferSize];
+			rA = new float[bufferSize];
+		}
+		if(isGyroCorrectionEnable)
+		{
+			this.gyroThresholdA = (float) 1.5;
+			this.gyroThresholdB = (float) 1.5;
+			this.gyroThresholdC = (float) 1.5;
+			this.isMoving = false;
+			bufferSizeg=5;
+			bufferMiddleg=(bufferSize-1)/2;
+			bufferPointg=0;
+			aAg = new float[bufferSize];
+			pAg = new float[bufferSize];
+			rAg = new float[bufferSize];
+		} 
 	}
 	
 	public synchronized void onDrawFrame(GL10 gl) {
-		
-		/*
-		if (isMedian) {
-		double tmpAzimuthArr[][] = new double[bufsize][2];
-		double tmpPitchArr[][] = new double[bufsize][2];
-		double tmpRollArr[][] = new double[bufsize][2];
-		float azimuth;
-		float pitch;
-		float roll;
-		
-		synchronized (this) {
-			
-			for(int i=0; i < bufsize;i++)
-			{
-				tmpAzimuthArr[i][0]=azimuthArr[i];
-				tmpPitchArr[i][0]=pitchArr[i];
-				tmpRollArr[i][0]=rollArr[i];
-				
-				if(azimuthArr[i]>180)
-				{
-					tmpAzimuthArr[i][1] = 180 - azimuthArr[i]; 
-				}
-				else
-				{
-					tmpAzimuthArr[i][1] = azimuthArr[i];
-				}
-				
-				if(pitchArr[i]>0)
-				{
-					tmpPitchArr[i][1] = 0-pitchArr[i];
-				}
-				else
-				{
-					tmpPitchArr[i][1] = pitchArr[i];
-				}
-				
-				if(rollArr[i]>0)
-				{
-					tmpRollArr[i][1] = 0-rollArr[i];
-				}
-				else
-				{
-					tmpRollArr[i][1] = rollArr[i]; 
-				}
-			}
-		}
-			int fpoint=bufsize-1;
-			for(int i=0; i < bufsize; i++)
-			{
-				for(int j=0;j<fpoint;j++)
-				{
-					if(tmpAzimuthArr[j][1]>tmpAzimuthArr[j+1][1])
-					{
-						double tf=tmpAzimuthArr[j][0];
-						double ts=tmpAzimuthArr[j][1];
-						tmpAzimuthArr[j][0] =tmpAzimuthArr[j+1][0];
-						tmpAzimuthArr[j][1] =tmpAzimuthArr[j+1][1];
-						tmpAzimuthArr[j+1][0] =tf;
-						tmpAzimuthArr[j+1][1] =ts;
-					}
-					if(tmpPitchArr[j][1]>tmpPitchArr[j+1][1])
-					{
-						double tf=tmpPitchArr[j][0];
-						double ts=tmpPitchArr[j][1];
-						tmpPitchArr[j][0] =tmpPitchArr[j+1][0];
-						tmpPitchArr[j][1] =tmpPitchArr[j+1][1];
-						tmpPitchArr[j+1][0] =tf;
-						tmpPitchArr[j+1][1] =ts;
-					}
-					if(tmpRollArr[j][1]>tmpRollArr[j+1][1])
-					{
-						double tf=tmpRollArr[j][0];
-						double ts=tmpRollArr[j][1];
-						tmpRollArr[j][0] =tmpRollArr[j+1][0];
-						tmpRollArr[j][1] =tmpRollArr[j+1][1];
-						tmpRollArr[j+1][0] =tf;
-						tmpRollArr[j+1][1] =ts;
-					}
-				}
-				fpoint--;
-			}
-			
-			azimuth = (float) tmpAzimuthArr[bufmiddle][0];
-			pitch = (float) tmpPitchArr[bufmiddle][0];
-			roll = (float) tmpRollArr[bufmiddle][0];
-		
-		} else {
-			azimuth = this.azimuth;
-			pitch = this.pitch;
-			roll = this.roll;
-		}
-		*/
 		if (hasImage) {
 			ArLib.precessImage(frame, azimuth, pitch, roll);
 			this.notify();
@@ -235,7 +151,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         	Log.e(TAG, "Can't open camera!");
         	
         }
-
+        this.cameraAngleVertical = cam.getParameters().getVerticalViewAngle();
         cam.setPreviewCallbackWithBuffer(this);
         
     }
@@ -323,10 +239,10 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	
 	protected float[] correctSensorValues( float[] input, float[] output ) {
 	    if ( output == null ) {
-	    	Log.i(TAG, "not low passed");
+	    	//Log.i(TAG, "not low passed");
 	    	return input;
 	    }
-	    Log.i(TAG, "low passed values");
+	    //Log.i(TAG, "low passed values");
 	    for ( int i=0; i<input.length; i++ ) {
 	    	//round value to get less shacky values
 	        output[i] = output[i] + LOW_PASS_ALPHA * (input[i] - output[i]);
@@ -356,45 +272,80 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         	} else {
         		accels = event.values.clone();
         	}
-
+        	case Sensor.TYPE_GYROSCOPE:
+	        		gyro=event.values.clone();
             break;
+        }
+        if(gyro!=null && isGyroCorrectionEnable)
+        {
+        	bufferPointg++;
+        	if(bufferPointg==bufferSizeg)
+        	{
+        		bufferPointg=0;
+        		java.util.Arrays.sort(this.aAg);
+        		java.util.Arrays.sort(this.pAg);
+        		java.util.Arrays.sort(this.rAg);
+        		float a = this.aAg[this.bufferMiddleg];
+        		float b = this.pAg[this.bufferMiddleg];
+        		float c = this.rAg[this.bufferMiddleg];
+        		if(a>=this.gyroThresholdA || b>=this.gyroThresholdB || c>=gyroThresholdC)
+        			this.isMoving = true;
+        		else
+        			this.isMoving = false;
+        		Log.i(TAG,"C Value: "+String.valueOf(c));
+        	}
+        	else
+        	{
+        		aAg[bufferPointg] = Math.abs(Math.round(Math.toDegrees(gyro[0])));
+        		pAg[bufferPointg] = Math.abs(Math.round(Math.toDegrees(gyro[1])));
+        		rAg[bufferPointg] = Math.abs(Math.round(Math.toDegrees(gyro[2])));
+        	}
+        	gyro=null;
         }
         
         if (mags != null && accels != null) 
         {
-        	
+        	if(isGyroCorrectionEnable)
+        	{
+        		if(!this.isMoving)
+        		{
+        			return;
+        		}
+        	}
             SensorManager.getRotationMatrix(RE, I, accels, mags);
             // remap fo landscape 
             SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
             //Calculate Orientation
-            SensorManager.getOrientation(outR, values);
-           
-            
-            azimuth = (float)Math.toDegrees(values[0]);
-            pitch = (float) Math.toDegrees(values[1]);
-            roll = (float) Math.toDegrees(values[2]);
-            /*
-            bufpoint=(bufpoint +1)%bufsize;
-            azimuthArr[bufpoint] = Math.toDegrees(values[0]);
-            pitchArr[bufpoint] = Math.toDegrees(values[1]);//(Math.toDegrees(values[1])+360)%360;
-            rollArr[bufpoint] = Math.toDegrees(values[2]);//(Math.toDegrees(values[2])+360)%360;
-            
+            SensorManager.getOrientation(outR, values);  
+            if(isSensorBufferingEnable)
+            {
+            	bufferPoint++;
+            	if(bufferPoint==bufferSize)
+            	{
+            		bufferPoint=0;
+            		java.util.Arrays.sort(this.aA);
+            		java.util.Arrays.sort(this.pA);
+            		java.util.Arrays.sort(this.rA);
+            		
+            		azimuth = aA[bufferMiddle];
+            		pitch = pA[bufferMiddle];
+            		roll = rA[bufferMiddle];
+            	}
+            	else
+            	{
+            		aA[bufferPoint] = (float)Math.toDegrees(values[0]);
+            		pA[bufferPoint] = (float)Math.toDegrees(values[1]);
+            		rA[bufferPoint] = (float)Math.toDegrees(values[2]);
+            	}
+            }
+            else
+            {
+                azimuth = (float)Math.toDegrees(values[0]);
+                pitch = (float) Math.toDegrees(values[1]);
+                roll = (float) Math.toDegrees(values[2]);            	
+            }
             mags=null;
             accels=null;
-            */
-            
-
         }
-        /*
-        if(gyro != null)
-        {
-        	if(Math.round(Math.toDegrees(gyro[0]))!=0)
-        		//outputOrTv1.setText(Double.toString(Math.round(Math.toDegrees(gyro[0])))+deg);
-        	if(Math.round(Math.toDegrees(gyro[1]))!=0)
-        		//outputOrTv2.setText(Double.toString(Math.round(Math.toDegrees(gyro[1])))+deg);
-        	if(Math.round(Math.toDegrees(gyro[2]))!=0)
-        		//outputOrTv3.setText(Double.toString(Math.round(Math.toDegrees(gyro[2])))+deg);
-            gyro=null;
-        }*/
 	}
 }

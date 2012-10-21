@@ -1,6 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item android:id="@+id/menu_sensorCorrection"
         android:title="@string/menu_sensorCorrection_off"
         android:orderInCategory="100"
         android:showAsAction="never" android:checked="true" android:checkable="true" android:enabled="true"/>
+        
+	<item android:id="@+id/menu_sensorBuffer"
+	        android:title="@string/menu_sensorBuffer_off"
+	        android:orderInCategory="100"
+	        android:showAsAction="never" android:checked="true" android:checkable="true" android:enabled="true"/>
+	
+	<item android:id="@+id/menu_gyroCorrection"
+	        android:title="@string/menu_gyroCorrection_off"
+	        android:orderInCategory="100"
+	        android:showAsAction="never" android:checked="true" android:checkable="true" android:enabled="true"/>
+
 </menu>
