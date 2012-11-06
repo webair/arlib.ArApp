@@ -66,5 +66,8 @@ Model::~Model() {
 	vertices = NULL;
 	delete modelView;
 	modelView = NULL;
+}
 
+glm::mat4 Model::getModelMatrix() {
+	return *this->modelView;
 }

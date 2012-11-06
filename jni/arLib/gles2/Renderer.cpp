@@ -41,13 +41,13 @@ static const char cameraFragmentShader[] =
 static const char objectVerticeShader[] =
 		"attribute vec4 a_position;"
 		"attribute vec2 a_texCoord;"
-		"uniform mat4 u_modelViewMatrix;"
+		"uniform mat4 u_modelViewProjection;"
 		"varying vec2 v_texCoord;"
 		"varying vec4 v_color;"
 
 		"void main()"
 		"{"
-			"gl_Position = u_modelViewMatrix * a_position;"
+			"gl_Position = u_modelViewProjection * a_position;"
 			"v_color = vec4(1.0,0.0,0.0,1.0);"
 			"v_texCoord = a_texCoord;"
 		"}";
@@ -133,8 +133,7 @@ Renderer::Renderer()
 	vsPositionHandle = glGetAttribLocation(cameraProgramRef, "a_position");
 	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
     fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
-    vsProjectionHandle = glGetUniformLocation(objectProgramRef, "u_projection");
-    vsModelViewMatrixHandle = glGetUniformLocation(objectProgramRef, "u_modelViewMatrix");
+    vsModelViewProjectionRef = glGetUniformLocation(objectProgramRef, "u_modelViewProjection");
 
 }
 
@@ -211,12 +210,11 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
 
-    glm::mat4 Projection = envData->getProjection();
     glUseProgram(objectProgramRef);
 
     Model* m = models->at(0);
-    glm::mat4 View = Projection * (*m->modelView);
-    glUniformMatrix4fv(vsModelViewMatrixHandle, 1, GL_FALSE, glm::value_ptr(View));
+    glm::mat4 MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * m->getModelMatrix();
+    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
 
     glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
     checkGlError("glVertexAttribPointer");

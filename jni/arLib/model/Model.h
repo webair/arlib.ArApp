@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+using namespace glm;
+
 class Model {
 public:
 	Model();
@@ -17,8 +19,8 @@ public:
 	GLuint verticesSize;
 	GLfloat centerPoint[3];
 
-	glm::mat4* modelView;
-
+	mat4 getModelMatrix();
+	mat4* modelView;
 };
 
 class Cube : public Model {

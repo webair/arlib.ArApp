@@ -83,11 +83,6 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		//Change Sensor Delay Here
 		sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
 		sm = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
-		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
-		
-		
 		
 		if(isSensorBufferingEnable)
 		{
@@ -115,7 +110,12 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	
 	public synchronized void onDrawFrame(GL10 gl) {
 		if (hasImage) {
-			ArLib.precessImage(frame, azimuth, pitch, roll);
+			//Log.d(TAG, String.format("pitch %f",pitch));
+			//ArLib.precessImage(frame, azimuth*(float)Math.PI/180.0f,  
+			//		pitch*(float)Math.PI/180.0f,  
+			//		roll*(float)Math.PI/180.0f);
+			ArLib.precessImage(frame, azimuth, pitch, roll);  		
+			
 			this.notify();
 		}
 	}
@@ -132,9 +132,10 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
+		openSensor();
 		openCamera();
 		setupCamera(1134, 720);
-		ArLib.initArLib(width, height, frameWidth, frameHeight);
+		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical);
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -151,7 +152,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         	Log.e(TAG, "Can't open camera!");
         	
         }
-        this.cameraAngleVertical = cam.getParameters().getVerticalViewAngle();
+        Log.i(TAG, String.format("camera angle %f", this.cameraAngleVertical));
         cam.setPreviewCallbackWithBuffer(this);
         
     }
@@ -166,6 +167,17 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
                 cam = null;
             }
         };
+    }
+    
+    public void openSensor() {
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), sensorDelay);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), sensorDelay);
+		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
+    }
+    
+    public void releaseSensor() {
+        Log.i(TAG, "release sensor");
+        sm.unregisterListener(this);
     }
 	
     public void setupCamera(int width, int height) {
@@ -202,6 +214,8 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
                 params = cam.getParameters();
                 frameWidth = params.getPreviewSize().width;
                 frameHeight = params.getPreviewSize().height;
+                cameraAngleVertical = params.getVerticalViewAngle();
+                Log.d(TAG, String.format("vertial view angle: %f",cameraAngleVertical));
                 Log.d(TAG, String.format("frame size: %dx%d",frameWidth, frameHeight));
 
                 int size = params.getPreviewSize().width * params.getPreviewSize().height;
@@ -292,7 +306,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         			this.isMoving = true;
         		else
         			this.isMoving = false;
-        		Log.i(TAG,"C Value: "+String.valueOf(c));
+        		//Log.i(TAG,"C Value: "+String.valueOf(c));
         	}
         	else
         	{

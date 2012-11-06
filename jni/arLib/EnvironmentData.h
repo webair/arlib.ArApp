@@ -34,12 +34,13 @@ public:
 	Orientation getDeviceOrientation();
 
 	vector<Model*>* getModels();
-	mat4 getProjection();
+	mat4 getProjectionMatrix();
+	mat4 getViewMatrix();
 
+	float frustumDistanceRatio;
 private:
 	float frustumNear;
 	float frustumFar;
-	float frustumDistanceRatio;
 	float frustumAngle;
 
 	mat4* baseProjection;

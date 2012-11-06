@@ -44,11 +44,11 @@ public:
 	//getters
 	vector<Model*>* getModels();
 	glm::mat4 getProjection();
+	EnvironmentData* envData;
 
 private:
 	// open gl stuff
 	Renderer *renderer;
-	EnvironmentData* envData;
 
 	glm::mat4* baseProjection;
 

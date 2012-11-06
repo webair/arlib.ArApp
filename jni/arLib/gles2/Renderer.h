@@ -28,11 +28,12 @@ private:
 	// openGL ref values
 	GLuint cameraProgramRef;
 	GLuint objectProgramRef;
+	GLuint vsModelViewProjectionRef;
+
 
 	GLuint vsPositionHandle;
 	GLuint vsTexCoordHandle;
-	GLuint vsProjectionHandle;
-	GLuint vsModelViewMatrixHandle;
+
 
 	// camera specific
 	GLuint fsCameraTextureRef;

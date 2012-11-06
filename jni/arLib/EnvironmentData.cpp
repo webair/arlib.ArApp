@@ -1,5 +1,6 @@
 #include "arLib/EnvironmentData.h"
 #include "util/Logger.h"
+#include <glm/gtx/euler_angles.hpp>
 
 EnvironmentData::EnvironmentData()
 {
@@ -45,7 +46,7 @@ float EnvironmentData::getVerticalAngle()
 void EnvironmentData::createBaseProjection()
 {
 	frustumNear = 1.0f;
-	frustumFar = 100.0f;
+	frustumFar = 1000.0f;
 	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
 
     LOGI("setup graphics:");
@@ -68,11 +69,30 @@ Orientation EnvironmentData::getDeviceOrientation()
 	return deviceOrientation;
 }
 
-glm::mat4 EnvironmentData::getProjection()
+glm::mat4 EnvironmentData::getProjectionMatrix()
 {
-	mat4 proj = *this->baseProjection;
-	mat4 rotation = rotate(mat4(1.0f), deviceOrientation.azimuth, glm::vec3(0.0f, 1.0f, 0.0f));
-	rotation = rotate(rotation, deviceOrientation.pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-	rotation = rotate(rotation, deviceOrientation.roll, glm::vec3(0.0f, 0.0f, 1.0f));
-	return proj * rotation;
+	return *this->baseProjection;
+	//return proj;
+}
+
+glm::mat4 EnvironmentData::getViewMatrix()
+{
+
+	//glm::vec3 lookAt =  vec3(0.0f,0.0f,1.0f) * glm::rotate( mat4(1.0f), -deviceOrientation.azimuth, vec3(0.0f,1.0f,0.0f));
+	/*
+	glm::mat4 view = glm::lookAt(
+	    glm::vec3(0.0f, 100.0f, 0.0f), // camera position (in our case 0,0,0)
+	    glm::vec3(0.0f, 0.0f, 0.0f), // look at position
+	    glm::vec3(0.0f, 1.0f, 0.0f)  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+*/
+	//mat4 view = glm::yawPitchRoll(-deviceOrientation.azimuth, -deviceOrientation.pitch, -deviceOrientation.roll);
+	mat4 view = mat4(1.0f);
+	view = rotate(view, deviceOrientation.azimuth, glm::vec3(0.0f, 1.0f, 0.0f));
+	view = rotate(view, deviceOrientation.pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+	view = rotate(view, deviceOrientation.roll, glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+	//mat4 view = translate(mat4(1.0f),vec3(-5.0f, 0.0f, 0.0f));
+	return view;
 }

@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (IIII)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
-  (JNIEnv *, jclass, jint, jint, jint, jint);
+  (JNIEnv *, jclass, jint, jint, jint, jint, jfloat);
 
 /*
  * Class:     ch_bfh_bachelor_ar_ArLib
