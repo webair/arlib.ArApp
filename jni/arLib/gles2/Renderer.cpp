@@ -42,13 +42,15 @@ static const char objectVerticeShader[] =
 		"attribute vec4 a_position;"
 		"attribute vec2 a_texCoord;"
 		"uniform mat4 u_modelViewProjection;"
+		"uniform vec4 u_color;"
 		"varying vec2 v_texCoord;"
 		"varying vec4 v_color;"
+
 
 		"void main()"
 		"{"
 			"gl_Position = u_modelViewProjection * a_position;"
-			"v_color = vec4(1.0,0.0,0.0,1.0);"
+			"v_color = u_color;"
 			"v_texCoord = a_texCoord;"
 		"}";
 
@@ -134,7 +136,7 @@ Renderer::Renderer()
 	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
     fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
     vsModelViewProjectionRef = glGetUniformLocation(objectProgramRef, "u_modelViewProjection");
-
+    vsColorRef = glGetUniformLocation(objectProgramRef, "u_color");
 }
 
 Renderer::~Renderer()
@@ -178,16 +180,11 @@ void Renderer::loadTexture(GLuint glRef, GLubyte* pixels, float width, float hei
 
 void Renderer::renderFrame(EnvironmentData *envData) {
 
-	static float angle = 0.0f;
-	angle += 0.5f;
-	if (angle >= 360.0f)
-		angle = 0.0f;
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     checkGlError("glClearColor");
     glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
-
+/*
     glUseProgram(cameraProgramRef);
     checkGlError("glUseProgram");
 
@@ -209,12 +206,14 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     checkGlError("glBindTexture");
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
-
+*/
     glUseProgram(objectProgramRef);
+
 
     Model* m = models->at(0);
     glm::mat4 MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * m->getModelMatrix();
     glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
+    glUniform4f(vsColorRef,  0.0f,  1.0f,  1.0f,  1.0f);
 
     glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
     checkGlError("glVertexAttribPointer");
@@ -223,6 +222,48 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     checkGlError("glEnableVertexAttribArray");
 
     glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
+    checkGlError("glDrawArrays");
+
+    GLfloat xAxis[] = {
+    	-100.0f, 0.0f, 0.0f,
+    	100.0f, 0.0f, 0.0f
+    };
+    GLfloat yAxis[] = {
+    	0.0f, -100.0f, 0.0f,
+    	0.0f, 100.0f, 0.0f
+    };
+    GLfloat zAxis[] = {
+    	0.0f, 0.0f, -100.0f,
+    	0.0f, 0.0f, 100.0f
+    };
+
+    MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * glm::mat4();
+
+    glUniform4f(vsColorRef,  1.0f,  0.0f,  0.0f,  1.0f);
+    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, xAxis);
+    checkGlError("glVertexAttribPointer");
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+    glDrawArrays(GL_LINES, 0, 2);
+    checkGlError("glDrawArrays");
+
+    glUniform4f(vsColorRef,  0.0f,  1.0f,  0.0f,  1.0f);
+    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, yAxis);
+    checkGlError("glVertexAttribPointer");
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+    glDrawArrays(GL_LINES, 0, 2);
+    checkGlError("glDrawArrays");
+
+    glUniform4f(vsColorRef,  0.0f,  0.0f,  1.0f,  1.0f);
+    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
+    glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, zAxis);
+    checkGlError("glVertexAttribPointer");
+    glEnableVertexAttribArray(vsPositionHandle);
+    checkGlError("glEnableVertexAttribArray");
+    glDrawArrays(GL_LINES, 0, 2);
     checkGlError("glDrawArrays");
     /*
     m = models->at(1);

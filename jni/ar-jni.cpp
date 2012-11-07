@@ -45,21 +45,22 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		//test adding models
 		Model *myModel = new Cube;
 	    glm::mat4 View = mat4(1.0f);
-	    //View = rotate(View, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
-	    //View = rotate(View, 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	    //View = rotate(View, -90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -5.0f));
 	    //View = glm::scale(View, glm::vec3(0.5));
 	    //View = glm::translate(View, glm::vec3(0.0, 0.0, -1.0));
 	    myModel->modelView = new glm::mat4(View);
 		r->addModel(myModel);
+
 		/*
 		//test adding models
 		Model *myModel2 = new Cube;
 	    glm::mat4 View2 = glm::mat4(1.0);
-	    View2 = glm::translate(View2, glm::vec3(0.0, 0.0, -26.0));
+	    View2 = glm::translate(View2, glm::vec3(-5.0f, 0.0f, 0.0f));
 	    myModel2->modelView = new glm::mat4(View2);
 		r->addModel(myModel2);
-		*/
+		 */
 	}
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage

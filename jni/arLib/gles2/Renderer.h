@@ -29,6 +29,7 @@ private:
 	GLuint cameraProgramRef;
 	GLuint objectProgramRef;
 	GLuint vsModelViewProjectionRef;
+	GLuint vsColorRef;
 
 
 	GLuint vsPositionHandle;
