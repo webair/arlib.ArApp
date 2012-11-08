@@ -31,6 +31,7 @@ public:
 
 	//device states
 	void setDeviceOrientation(Orientation orientation);
+	void setRotationMatrix(float *rotationMatrix);
 	Orientation getDeviceOrientation();
 
 	vector<Model*>* getModels();
@@ -44,7 +45,7 @@ private:
 	float frustumAngle;
 
 	mat4* baseProjection;
-
+	mat4* rotationMatrix;
 	//image stuff
 	Dimension imageDimension;
 	float imageRatio;

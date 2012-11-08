@@ -47,6 +47,11 @@ void ArLib::createViewport(float availableWidth, float availableHeight)
 	LOGI("image ratio: %f", envData->getImageRatio());
 	LOGI("image RGBA size: %d", envData->getImageRGBASize());
 
+	LOGI("screen width: %f", availableWidth);
+	LOGI("screen height: %f", availableHeight);
+	LOGI("viewport width: %f", viewPortWidth);
+	LOGI("viewport height: %f", viewPortHeight);
+
 	renderer->setViewport(
 			(availableWidth-viewPortWidth)/2,
 			(availableHeight-viewPortHeight)/2,

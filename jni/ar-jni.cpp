@@ -14,6 +14,7 @@
 
 using namespace cv;
 using namespace std;
+using namespace glm;
 
 ArLib *arLib;
 
@@ -46,33 +47,95 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		Model *myModel = new Cube;
 	    glm::mat4 View = mat4(1.0f);
 
-	    //View = rotate(View, -90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -5.0f));
-	    //View = glm::scale(View, glm::vec3(0.5));
-	    //View = glm::translate(View, glm::vec3(0.0, 0.0, -1.0));
+	    //north
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
+
 	    myModel->modelView = new glm::mat4(View);
 		r->addModel(myModel);
 
+		myModel = new Cube;
+	    View = mat4(1.0f);
+
+	    //east
+	    View = rotate(View, -90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
+
+	    myModel->modelView = new glm::mat4(View);
+		r->addModel(myModel);
+
+		myModel = new Cube;
+	    View = mat4(1.0f);
+
+	    //south
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -10.0f));
+
+	    myModel->modelView = new glm::mat4(View);
+		r->addModel(myModel);
+
+		myModel = new Cube;
+	    View = mat4(1.0f);
+
+	    //west
+	    View = rotate(View, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
+
+	    myModel->modelView = new glm::mat4(View);
+		r->addModel(myModel);
+
+		myModel = new Cube;
+	    View = mat4(1.0f);
+
+	    //down
+	    View = glm::translate(View, glm::vec3(0.0f, -10.0f, 0.0f));
+
+	    myModel->modelView = new glm::mat4(View);
+		r->addModel(myModel);
+
+		myModel = new Cube;
+	    View = mat4(1.0f);
+
+	    //up
+	    View = glm::translate(View, glm::vec3(0.0f, 10.0f, 0.0f));
+
+	    myModel->modelView = new glm::mat4(View);
+		r->addModel(myModel);
+
+		//mat4 tranlation = translate(mat4(),vec3(2.0f,3.0f,4.0f));
+		//LOGI("rot: %f, %f, %f, %f", tranlation[3][1], tranlation[3][2], tranlation[2][0], tranlation[3][0]);
 		/*
-		//test adding models
-		Model *myModel2 = new Cube;
-	    glm::mat4 View2 = glm::mat4(1.0);
-	    View2 = glm::translate(View2, glm::vec3(-5.0f, 0.0f, 0.0f));
-	    myModel2->modelView = new glm::mat4(View2);
-		r->addModel(myModel2);
-		 */
+		float testMatrix[16] = {
+				1.1f, 2.1f, 3.1f, 4.1f,
+				1.2f, 2.2f, 3.2f, 4.2f,
+				1.3f, 2.3f, 3.3f, 4.3f,
+				1.4f, 2.4f, 3.4f, 4.4f,
+		};
+		mat4 testMat = transpose(make_mat4(testMatrix));
+		*/
 	}
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
-  (JNIEnv *env, jclass obj, jbyteArray yuvImageArray, jfloat azimuth, jfloat pitch, jfloat roll)
+  (JNIEnv *env, jclass obj, jbyteArray yuvImageArray, jfloat azimuth,
+		  jfloat pitch, jfloat roll, jfloatArray rotationMatrixArray)
 	{
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
+
 		Orientation orientation;
-		orientation.azimuth = (float)azimuth;
+		orientation.azimuth = (float) azimuth;
+		//orientation.roll = 0.0f;
 		orientation.roll = (float) roll;
 		orientation.pitch = (float) pitch;
+		/*
+		orientation.azimuth = 0.0f;
+		orientation.roll = 0.0f;
+		orientation.pitch = 0.0f;
+		*/
+		LOGI("azimuth: %f, pitch: %f, roll: %f", orientation.azimuth, orientation.pitch, orientation.roll);
+
+		float *rotationMatrixRaw = env->GetFloatArrayElements(rotationMatrixArray, 0);
+		arLib->envData->setRotationMatrix(rotationMatrixRaw);
 		arLib->setDeviceOrientation(orientation);
 		arLib->processImage((unsigned char *)yuvRaw);
 	    env->ReleaseByteArrayElements(yuvImageArray, yuvRaw, 0);
+	    env->ReleaseFloatArrayElements(rotationMatrixArray, rotationMatrixRaw, 0);
 	}
 }

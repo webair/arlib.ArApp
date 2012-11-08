@@ -62,7 +62,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     	
         private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
         
-        public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+        @Override
+		public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
             Log.w(TAG, "creating OpenGL ES 2.0 context");
             checkEglError("Before eglCreateContext", egl);
             int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
@@ -71,7 +72,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
             return context;
         }
 
-        public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+        @Override
+		public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
             egl.eglDestroyContext(display, context);
         }
     }
@@ -108,7 +110,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
             EGL10.EGL_NONE
         };
 
-        public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+        @Override
+		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
         	
         	
             /* Get the number of minimally matching EGL configurations

@@ -108,6 +108,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		} 
 	}
 	
+	@Override
 	public synchronized void onDrawFrame(GL10 gl) {
 		if (hasImage) {
 			//float azimuth = (float) Math.toDegrees(this.azimuth);
@@ -116,8 +117,13 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 			//float azimuth = (this.azimuth < 0.0f) ? this.azimuth + (2.0f * (float) Math.PI) : this.azimuth;
 			float roll = (float) (this.roll+(Math.PI/2));
 			//Log.d(TAG, String.format("pitch %f",pitch));
-			Log.i(TAG, String.format("azimuth: %f, pitch: %f, roll: %f",azimuth, pitch, roll));
-			ArLib.precessImage(frame, azimuth, pitch, roll);
+			//Log.i(TAG, String.format("azimuth: %f, pitch: %f, roll: %f",azimuth, pitch, roll));
+			
+			Log.i(TAG,String.format("sdk row1: %f, %f, %f",outR[0], outR[1], outR[2]));
+			Log.i(TAG,String.format("sdk row2: %f, %f, %f",outR[4], outR[5], outR[6]));
+			Log.i(TAG,String.format("sdk row3: %f, %f, %f",outR[8], outR[9], outR[10]));
+			
+			ArLib.precessImage(frame, azimuth, pitch, roll, RE.clone());
 			//ArLib.precessImage(frame, azimuth, pitch, roll);
 			
 			this.notify();
@@ -135,6 +141,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         cam.addCallbackBuffer(buffer);
 	}
 
+	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		openSensor();
 		openCamera();
@@ -142,6 +149,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical);
 	}
 
+	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		// stub method
 	}
@@ -330,12 +338,16 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
         			return;
         		}
         	}
-            SensorManager.getRotationMatrix(RE, I, accels, mags);
-            // remap fo landscape 
-            SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
-            
-            //Calculate Orientation
-            SensorManager.getOrientation(outR, values);  
+                SensorManager.getRotationMatrix(RE, I, accels, mags);
+                // remap fo landscape 
+                //SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_MINUS_X, outR);
+                SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_Z, outR);
+                //SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,SensorManager.AXIS_MINUS_Y, outR);
+                //SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_X, outR);
+                //Calculate Orientation
+                SensorManager.getOrientation(outR, values);  				
+			
+
             if(isSensorBufferingEnable)
             {
             	bufferPoint++;
@@ -352,16 +364,16 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
             	}
             	else
             	{
-            		aA[bufferPoint] = (float)values[0];
-            		pA[bufferPoint] = (float)values[1];
-            		rA[bufferPoint] = (float)values[2];
+            		aA[bufferPoint] = values[0];
+            		pA[bufferPoint] = values[1];
+            		rA[bufferPoint] = values[2];
             	}
             }
             else
             {
-                azimuth = (float)values[0];
-                pitch = (float)values[1];
-                roll = (float)values[2];            	
+                azimuth = values[0];
+                pitch = values[1];
+                roll = values[2];            	
             }
             mags=null;
             accels=null;

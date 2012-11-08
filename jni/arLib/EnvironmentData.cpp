@@ -69,6 +69,15 @@ Orientation EnvironmentData::getDeviceOrientation()
 	return deviceOrientation;
 }
 
+void EnvironmentData::setRotationMatrix(float *rotationMatrix) {
+	// REMINDER: glm is column major, so access to value: mat4[column][row]
+	mat4 rotMat = transpose(make_mat4(rotationMatrix));
+	LOGI("glm row1: %f, %f, %f, %f", rotMat[0][0], rotMat[1][0], rotMat[2][0], rotMat[3][0]);
+	LOGI("glm row2: %f, %f, %f, %f", rotMat[0][1], rotMat[1][1], rotMat[2][1], rotMat[3][1]);
+	LOGI("glm row3: %f, %f, %f, %f", rotMat[0][2], rotMat[1][2], rotMat[2][2], rotMat[3][2]);
+	this->rotationMatrix = new mat4(rotMat);
+}
+
 glm::mat4 EnvironmentData::getProjectionMatrix()
 {
 	return *this->baseProjection;
@@ -77,79 +86,5 @@ glm::mat4 EnvironmentData::getProjectionMatrix()
 
 glm::mat4 EnvironmentData::getViewMatrix()
 {
-
-	/*
-	//vec4 lookAtTemp = vec4(0.0f,0.0f,1.0f,1.0f) * yawPitchRoll(
-	//		deviceOrientation.azimuth,
-	//		deviceOrientation.pitch,
-	//		deviceOrientation.roll);
-	//vec3 lookAt = vec3(lookAtTemp.x, lookAtTemp.y, lookAtTemp.z);
-	vec3 lookAt = vec3(sin(-deviceOrientation.azimuth),tan(-deviceOrientation.pitch),cos(-deviceOrientation.azimuth));
-
-
-
-	//headUp = headUp * rotate(mat4(), (-deviceOrientation.roll*180.0f)/3.14159265f, vec3(0.0f, 0.0f, 1.0f));
-	//glm::vec3 lookAt =  vec3(0.0f,0.0f,1.0f) * glm::rotate( mat4(1.0f), -deviceOrientation.azimuth, vec3(0.0f,1.0f,0.0f));
-
-	//float pitch = deviceOrientation.pitch;
-	//float roll = deviceOrientation.roll;
-
-
-
-	mat4 eulerRotationMatrix = glm::yawPitchRoll(
-			deviceOrientation.azimuth,
-			deviceOrientation.pitch,
-			deviceOrientation.roll);
-	*/
-	//mat4 sensorRotation = mat4();
-	//sensorRotation = rotate(sensorRotation, deviceOrientation.roll, glm::vec3(0.0f, 0.0f, 1.0f));
-	//sensorRotation = rotate(sensorRotation, deviceOrientation.azimuth, vec3(0.0f, 1.0f, 0.0f));
-	//sensorRotation = rotate(sensorRotation, -deviceOrientation.pitch, vec3(1.0f, 0.0f, 0.0f));
-
-	//lookAt = lookAt*eulerRotationMatrix;
-	//headUp = headUp*eulerRotationMatrix;
-	vec3 camPos = vec3(0.0f, -2.0f, -2.0f);
-
-	vec3 lookAt =  vec3( cos(deviceOrientation.pitch) * sin(deviceOrientation.azimuth),
-						 cos(deviceOrientation.pitch),
-					 sin(deviceOrientation.pitch) * sin(deviceOrientation.azimuth)
-	);
-	lookAt.x += camPos.x;
-	lookAt.y += camPos.y;
-	lookAt.z += camPos.z;
-
-	//vec4 headUp = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	vec3 headUp = vec3(0.0f, 1.0f, 0.0f);
-	//vec3 headUp = cross(normalize(lookAt), vec3(0.0f, 1.0f, 0.0f));
-	//headUp = cross(headUp, lookAt);
-	//vec4 tmp = vec4(headUp.x, headUp.y, headUp.z, 1.0f) * rotate(mat4(), -cos(deviceOrientation.azimuth) * ((deviceOrientation.roll*180.0f)/3.14159265f), vec3(0.0f, 0.0f, 1.0f));
-	//headUp.x = tmp.x;
-	//headUp.y = tmp.y;
-	//headUp.z = tmp.z;
-
-	//vec3 headUp = vec3(sin(deviceOrientation.roll),cos(deviceOrientation.roll),0.0f);
-	/*
-	headUp.x = cos(deviceOrientation.azimuth)*sin(deviceOrientation.pitch)*sin(deviceOrientation.roll) - sin(deviceOrientation.azimuth)*cos(deviceOrientation.roll);
-	headUp.y = sin(deviceOrientation.azimuth)*sin(deviceOrientation.pitch)*sin(deviceOrientation.roll) + cos(deviceOrientation.azimuth)*sin(deviceOrientation.roll);
-	headUp.z = cos(deviceOrientation.pitch)*sin(deviceOrientation.roll);
-	*/
-	//LOGI("up vector: %f, %f, %f", headUp.x, headUp.y, headUp.z);
-
-
-
-	glm::mat4 view = glm::lookAt(
-		camPos, // camera position
-	    lookAt, // look at position
-	    headUp
-	    //glm::vec3(0.0f, 1.0f, 0.0f)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
-
-	//mat4 view = glm::yawPitchRoll(-deviceOrientation.azimuth, -deviceOrientation.pitch, -deviceOrientation.roll);
-
-
-
-
-
-	//mat4 view = translate(mat4(1.0f),vec3(-5.0f, 0.0f, 0.0f));
-	return view;
+	return rotate(rotate(rotate(mat4(), (deviceOrientation.roll * 180.0f) / 3.14159265f, vec3(0.0f, 0.0f, 1.0f)), (deviceOrientation.pitch * 180.0f) / 3.14159265f, vec3(1.0f, 0.0f, 0.0f)), (deviceOrientation.azimuth * 180.0f) / 3.14159265f, vec3(0.0f, 1.0f, 0.0f));
 }
