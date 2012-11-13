@@ -50,7 +50,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    //north
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		myModel = new Cube;
@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    View = rotate(View, -90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		myModel = new Cube;
@@ -69,7 +69,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    //south
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -10.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		myModel = new Cube;
@@ -79,7 +79,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    View = rotate(View, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		myModel = new Cube;
@@ -88,7 +88,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    //down
 	    View = glm::translate(View, glm::vec3(0.0f, -10.0f, 0.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		myModel = new Cube;
@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 	    //up
 	    View = glm::translate(View, glm::vec3(0.0f, 10.0f, 0.0f));
 
-	    myModel->modelView = new glm::mat4(View);
+	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
 		//mat4 tranlation = translate(mat4(),vec3(2.0f,3.0f,4.0f));
@@ -129,7 +129,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 		orientation.roll = 0.0f;
 		orientation.pitch = 0.0f;
 		*/
-		LOGI("azimuth: %f, pitch: %f, roll: %f", orientation.azimuth, orientation.pitch, orientation.roll);
+		//LOGI("azimuth: %f, pitch: %f, roll: %f", orientation.azimuth, orientation.pitch, orientation.roll);
 
 		float *rotationMatrixRaw = env->GetFloatArrayElements(rotationMatrixArray, 0);
 		arLib->envData->setRotationMatrix(rotationMatrixRaw);

@@ -184,6 +184,16 @@ void Renderer::loadTexture(GLuint glRef, GLubyte* pixels, float width, float hei
     checkGlError("glGetAttribLocation");
 }
 
+GLfloat testQuad[] = {
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f
+};
+
+GLushort test[] = {0,1,2};
 void Renderer::renderFrame(EnvironmentData *envData) {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     checkGlError("glClearColor");
@@ -236,14 +246,19 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     	}
 
 
-    	glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->vertices);
+    	GLfloat *blubi = m->getVertices();
+    	//LOGI("%f %f %f", blubi[0], blubi[1], blubi[2]);
+
+    	glVertexAttribPointer(vsPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, m->getVertices());
     	checkGlError("glVertexAttribPointer");
 
     	glEnableVertexAttribArray(vsPositionHandle);
     	checkGlError("glEnableVertexAttribArray");
 
-    	glDrawArrays(GL_TRIANGLES, 0, m->verticesSize/3);
-    	checkGlError("glDrawArrays");
+
+    	glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
+    	//glDrawArrays(GL_TRIANGLES, 0, 3);
+    	checkGlError("glDrawElemnts");
     }
 
 

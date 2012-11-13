@@ -15,12 +15,32 @@ public:
 	Model();
 	~Model();
 
-	GLfloat* vertices;
-	GLuint verticesSize;
-	GLfloat centerPoint[3];
+	// raw data
+	GLuint getNumberOfVertices();
+	GLfloat* getVertices();
+	GLfloat* getNormals();
+	GLuint getNumberOfFaces();
+	GLushort* getFaces();
+	GLfloat* getCenterOfGravity();
 
+	// object modeling
+	void setModelMatrix(mat4 matrix);
 	mat4 getModelMatrix();
-	mat4* modelView;
+
+
+
+protected:
+	GLuint numberOfVertices;
+	GLfloat* vertices;
+	GLfloat* normals;
+	GLuint numberOfFaces;
+	GLushort *faces;
+	GLfloat centerOfGravity[3];
+
+	mat4* modelMatrix;
+	mat4* objectMatrix;
+
+
 };
 
 class Cube : public Model {

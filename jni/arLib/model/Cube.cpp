@@ -6,68 +6,116 @@
 using namespace std;
 
 Model::Model() {
-	verticesSize = 108;
-	vertices = (GLfloat *) new GLfloat[verticesSize];
-	centerPoint[0] = 0.0f;
-	centerPoint[1] = 0.0f;
-	centerPoint[2] = 0.0f;
+	numberOfVertices = 8;
+	vertices = (GLfloat *) new GLfloat[numberOfVertices * 3];
 
-	GLfloat values[] = {-1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f};
-	GLfloat values2[] = {-22.0f, -22.0f, -20.0f, -20.0f, -20.0f, -22.0f};
+	numberOfFaces = 36;
+	faces = (GLushort *) new GLushort[numberOfFaces];
 
-	for (int i=0; i < verticesSize / 2; i++) {
+	centerOfGravity[0] = 0.0f;
+	centerOfGravity[1] = 0.0f;
+	centerOfGravity[2] = 0.0f;
 
-		if (i%18 == 0) {
-			if (i<18) {
-			//front and back face
-				for (int j=0; j<6; j++) {
-					int offset = 0;
-					vertices[i + j*3] = values[j];
-					vertices[i + 1 + j*3] = values[(j + 4) % 6];
-					vertices[i + 2 + j*3] = 1.0f;
-					int backOffset = offset + 18;
-					vertices[i + backOffset + j*3] = values[j];
-					vertices[i + backOffset + 1 + j*3] = values[(j + 4) % 6];
-					vertices[i + backOffset + 2 + j*3] = -1.0f;
+	GLfloat values[] = {-1.0f, 1.0f, 1.0f, -1.0f};
+	GLfloat vertice_value[3];
 
-				}
-
-			} else if (i<36) {
-			// left and right face
-				int offset = 18;
-				for (int j=0; j<6; j++) {
-					vertices[i + offset + j*3] = -1.0f;
-					vertices[i + offset + 1 + j*3] = values[j];
-					vertices[i + offset + 2 + j*3] = values[(j + 4) % 6];
-					int backOffset = offset + 18;
-					vertices[i + backOffset + j*3] = 1.0f;
-					vertices[i + backOffset + 1 + j*3] =values[(j + 4) % 6];
-					vertices[i + backOffset + 2 + j*3] = values[j];
-				}
-			} else {
-			// top and bottom face
-				int offset = 36;
-				for (int j=0; j<6; j++) {
-					vertices[i + offset + j*3] = values[j];
-					vertices[i + offset + 1 + j*3] = -1.0f;
-					vertices[i + offset + 2 + j*3] = values[(j + 4) % 6];
-					int backOffset = offset + 18;
-					vertices[i + backOffset + j*3] = values[(j + 4) % 6];
-					vertices[i + backOffset + 1 + j*3] = 1.0f;
-					vertices[i + backOffset + 2 + j*3] = values[j];
-				}
-			}
-		}
+	for (int i= 0; i<4; i++) {
+		int x = i*3;
+		int y = x+1;
+		int z = y+1;
+		vertices[x] = values[i];
+		vertices[y] = values[(i+1)%4];
+		vertices[z] = 1.0f;
 	}
+
+	for (int i= 12; i<24; i++) {
+		int x = i*3;
+		int y = x+1;
+		int z = y+1;
+		vertices[x] = values[i];
+		vertices[y] = values[(i+1)%4];
+		vertices[z] = -1.0f;
+	}
+	//front
+	faces[0] = 0;
+	faces[1] = 1;
+	faces[2] = 2;
+	faces[3] = 2;
+	faces[4] = 3;
+	faces[5] = 0;
+
+	//left
+	faces[6] = 0;
+	faces[7] = 4;
+	faces[8] = 7;
+	faces[9] = 7;
+	faces[10] = 3;
+	faces[11] = 0;
+
+	//back
+	faces[12] = 7;
+	faces[13] = 6;
+	faces[14] = 5;
+	faces[15] = 5;
+	faces[16] = 4;
+	faces[17] = 7;
+
+	//right
+	faces[18] = 2;
+	faces[19] = 6;
+	faces[20] = 5;
+	faces[21] = 5;
+	faces[22] = 1;
+	faces[23] = 2;
+
+	//top
+	faces[24] = 3;
+	faces[25] = 2;
+	faces[26] = 7;
+	faces[27] = 7;
+	faces[28] = 6;
+	faces[29] = 2;
+
+	//bottom
+	faces[30] = 0;
+	faces[31] = 1;
+	faces[32] = 4;
+	faces[33] = 4;
+	faces[34] = 5;
+	faces[35] = 1;
+
+
+
 }
 
 Model::~Model() {
 	delete [] vertices;  // When done, free memory pointed to by a
 	vertices = NULL;
-	delete modelView;
-	modelView = NULL;
+}
+
+void Model::setModelMatrix(mat4 matrix) {
+	this->modelMatrix = new mat4(matrix);
+
 }
 
 glm::mat4 Model::getModelMatrix() {
-	return *this->modelView;
+	return *this->modelMatrix;
 }
+
+GLuint Model::getNumberOfVertices() {
+	return this->numberOfVertices;
+}
+GLfloat* Model::getVertices() {
+	return this->vertices;
+
+}
+
+GLuint Model::getNumberOfFaces() {
+	return this->numberOfFaces;
+
+}
+GLushort* Model::getFaces() {
+	return this->faces;
+
+}
+GLfloat* getCenterOfGravity();

@@ -72,9 +72,9 @@ Orientation EnvironmentData::getDeviceOrientation()
 void EnvironmentData::setRotationMatrix(float *rotationMatrix) {
 	// REMINDER: glm is column major, so access to value: mat4[column][row]
 	mat4 rotMat = transpose(make_mat4(rotationMatrix));
-	LOGI("glm row1: %f, %f, %f, %f", rotMat[0][0], rotMat[1][0], rotMat[2][0], rotMat[3][0]);
-	LOGI("glm row2: %f, %f, %f, %f", rotMat[0][1], rotMat[1][1], rotMat[2][1], rotMat[3][1]);
-	LOGI("glm row3: %f, %f, %f, %f", rotMat[0][2], rotMat[1][2], rotMat[2][2], rotMat[3][2]);
+	//LOGI("glm row1: %f, %f, %f, %f", rotMat[0][0], rotMat[1][0], rotMat[2][0], rotMat[3][0]);
+	//LOGI("glm row2: %f, %f, %f, %f", rotMat[0][1], rotMat[1][1], rotMat[2][1], rotMat[3][1]);
+	//LOGI("glm row3: %f, %f, %f, %f", rotMat[0][2], rotMat[1][2], rotMat[2][2], rotMat[3][2]);
 	this->rotationMatrix = new mat4(rotMat);
 }
 
