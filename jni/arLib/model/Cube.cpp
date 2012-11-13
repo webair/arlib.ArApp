@@ -5,84 +5,61 @@
 
 using namespace std;
 
+GLushort a_indices[]  = { 0, 1, 2,   2, 3, 0,      // front
+                       4, 5, 6,   6, 7, 4,      // right
+                       8, 9,10,  10,11, 8,      // top
+                      12,13,14,  14,15,12,      // left
+                      16,17,18,  18,19,16,      // bottom
+                      20,21,22,  22,23,20 };    // back
+
+GLfloat a_vertices[] = { 1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front)
+                       -1, 1, 1,   0, 0, 1,   1, 1, 0,              // v1
+                       -1,-1, 1,   0, 0, 1,   1, 0, 0,              // v2
+                        1,-1, 1,   0, 0, 1,   1, 0, 1,              // v3
+
+                        1, 1, 1,   1, 0, 0,   1, 1, 1,              // v0 (right)
+                        1,-1, 1,   1, 0, 0,   1, 0, 1,              // v3
+                        1,-1,-1,   1, 0, 0,   0, 0, 1,              // v4
+                        1, 1,-1,   1, 0, 0,   0, 1, 1,              // v5
+
+                        1, 1, 1,   0, 1, 0,   1, 1, 1,              // v0 (top)
+                        1, 1,-1,   0, 1, 0,   0, 1, 1,              // v5
+                       -1, 1,-1,   0, 1, 0,   0, 1, 0,              // v6
+                       -1, 1, 1,   0, 1, 0,   1, 1, 0,              // v1
+
+                       -1, 1, 1,  -1, 0, 0,   1, 1, 0,              // v1 (left)
+                       -1, 1,-1,  -1, 0, 0,   0, 1, 0,              // v6
+                       -1,-1,-1,  -1, 0, 0,   0, 0, 0,              // v7
+                       -1,-1, 1,  -1, 0, 0,   1, 0, 0,              // v2
+
+                       -1,-1,-1,   0,-1, 0,   0, 0, 0,              // v7 (bottom)
+                        1,-1,-1,   0,-1, 0,   0, 0, 1,              // v4
+                        1,-1, 1,   0,-1, 0,   1, 0, 1,              // v3
+                       -1,-1, 1,   0,-1, 0,   1, 0, 0,              // v2
+
+                        1,-1,-1,   0, 0,-1,   0, 0, 1,              // v4 (back)
+                       -1,-1,-1,   0, 0,-1,   0, 0, 0,              // v7
+                       -1, 1,-1,   0, 0,-1,   0, 1, 0,              // v6
+                        1, 1,-1,   0, 0,-1,   0, 1, 1 };            // v5
+
 Model::Model() {
-	numberOfVertices = 8;
-	vertices = (GLfloat *) new GLfloat[numberOfVertices * 3];
+	numberOfVertices = 36;
+	vertices = (GLfloat *) new GLfloat[216];
+
+	for (int i = 0; i < 216; i++) {
+		vertices[i] = a_vertices[i];
+	}
 
 	numberOfFaces = 36;
 	faces = (GLushort *) new GLushort[numberOfFaces];
 
+	for (int i = 0; i < 36; i++) {
+		faces[i] = a_indices[i];
+	}
+
 	centerOfGravity[0] = 0.0f;
 	centerOfGravity[1] = 0.0f;
 	centerOfGravity[2] = 0.0f;
-
-	GLfloat values[] = {-1.0f, 1.0f, 1.0f, -1.0f};
-	GLfloat vertice_value[3];
-
-	for (int i= 0; i<4; i++) {
-		int x = i*3;
-		int y = x+1;
-		int z = y+1;
-		vertices[x] = values[i];
-		vertices[y] = values[(i+1)%4];
-		vertices[z] = 1.0f;
-	}
-
-	for (int i= 12; i<24; i++) {
-		int x = i*3;
-		int y = x+1;
-		int z = y+1;
-		vertices[x] = values[i];
-		vertices[y] = values[(i+1)%4];
-		vertices[z] = -1.0f;
-	}
-	//front
-	faces[0] = 0;
-	faces[1] = 1;
-	faces[2] = 2;
-	faces[3] = 2;
-	faces[4] = 3;
-	faces[5] = 0;
-
-	//left
-	faces[6] = 0;
-	faces[7] = 4;
-	faces[8] = 7;
-	faces[9] = 7;
-	faces[10] = 3;
-	faces[11] = 0;
-
-	//back
-	faces[12] = 7;
-	faces[13] = 6;
-	faces[14] = 5;
-	faces[15] = 5;
-	faces[16] = 4;
-	faces[17] = 7;
-
-	//right
-	faces[18] = 2;
-	faces[19] = 6;
-	faces[20] = 5;
-	faces[21] = 5;
-	faces[22] = 1;
-	faces[23] = 2;
-
-	//top
-	faces[24] = 3;
-	faces[25] = 2;
-	faces[26] = 7;
-	faces[27] = 7;
-	faces[28] = 6;
-	faces[29] = 2;
-
-	//bottom
-	faces[30] = 0;
-	faces[31] = 1;
-	faces[32] = 4;
-	faces[33] = 4;
-	faces[34] = 5;
-	faces[35] = 1;
 
 
 

@@ -30,9 +30,10 @@ private:
 	GLuint objectProgramRef;
 	GLuint vsModelViewProjectionRef;
 	GLuint vsColorRef;
+	GLuint vsPositionRef;
+	GLuint vsNormalRef;
 
 
-	GLuint vsPositionHandle;
 	GLuint vsTexCoordHandle;
 
 
