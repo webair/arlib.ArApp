@@ -11,36 +11,44 @@
 using namespace glm;
 
 class Model {
+
 public:
-	Model();
+	Model(GLfloat* vnt, int numberOfVNT,
+		  GLushort* faces, int numberOfFaces,
+		  GLfloat* centerOfGravity, GLfloat* boundingBox,
+		  GLfloat northAngle);
 	~Model();
 
-	// raw data
-	GLuint getNumberOfVertices();
-	GLfloat* getVertices();
+	// raw data vertices, normals & textures
+	GLfloat* getVNT();
+
+	//faces
 	GLuint getNumberOfFaces();
 	GLushort* getFaces();
+
 	GLfloat* getCenterOfGravity();
 
-	// object modeling
-	void setModelMatrix(mat4 matrix);
+	GLfloat* getBoundingBox();
+
+	//defines the translation relative to 0,0,0 coordinate
+	void setWorldMatrix(mat4 modelMatrix);
+
+	//returns all the translation and rotation needed to display object
 	mat4 getModelMatrix();
 
 
 protected:
-	GLuint numberOfVertices;
-	GLfloat* vertices;
+	GLfloat* vnt;
+
 	GLuint numberOfFaces;
 	GLushort *faces;
+
 	GLfloat centerOfGravity[3];
+	GLfloat boundingBox[24];
 
 	mat4* modelMatrix;
+	//defines the matrxix to move the object to 0 coord and rotate relative to north angle
 	mat4* objectMatrix;
-
-
 };
 
-class Cube : public Model {
-
-};
 #endif

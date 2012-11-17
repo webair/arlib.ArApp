@@ -21,9 +21,6 @@ public:
 	void loadTexture(GLuint glRef, GLubyte* pixels, float width, float height);
 	void renderFrame(EnvironmentData *envData);
 
-	//obsolete
-	void addModel(Model* m);
-
 private:
 	// openGL ref values
 	GLuint cameraProgramRef;
@@ -51,8 +48,5 @@ private:
 
 	//fps counter
 	double lastTime;
-
-	//models
-	vector<Model*>* models;
 };
 #endif

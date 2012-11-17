@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     ch_bfh_bachelor_ar_ArLib
  * Method:    initArLib
- * Signature: (IIII)V
+ * Signature: (IIIIF)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
   (JNIEnv *, jclass, jint, jint, jint, jint, jfloat);
@@ -18,10 +18,18 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 /*
  * Class:     ch_bfh_bachelor_ar_ArLib
  * Method:    precessImage
- * Signature: ([B)V
+ * Signature: ([BFFF[F)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
   (JNIEnv *, jclass, jbyteArray, jfloat, jfloat, jfloat, jfloatArray);
+
+/*
+ * Class:     ch_bfh_bachelor_ar_ArLib
+ * Method:    addModel
+ * Signature: ([F[S[F[FFFF)V
+ */
+JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
+  (JNIEnv *, jclass, jfloatArray, jshortArray, jfloatArray, jfloatArray, jfloat, jfloat, jfloat);
 
 #ifdef __cplusplus
 }

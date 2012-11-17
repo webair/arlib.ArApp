@@ -34,27 +34,24 @@ public:
 	//camera image
 	void setVerticalAngle(float angle);
 
-
 	//actions
 	void processImage(unsigned char *imageData);
 
 	//device states
 	void setDeviceOrientation(Orientation orientation);
+	void setDeviceLocation(Location location);
 
-	//getters
-	vector<Model*>* getModels();
+	//getters & setters
 	glm::mat4 getProjection();
 	EnvironmentData* envData;
 
+	//adding models
+	void addModel(Model* m);
 private:
 	// open gl stuff
 	Renderer *renderer;
-
 	glm::mat4* baseProjection;
-
 	unsigned char* rgbaRaw;
-
-
 
 	void createViewport(float availableWidth, float availableHeight);
 

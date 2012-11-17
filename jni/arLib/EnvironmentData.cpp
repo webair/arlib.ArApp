@@ -4,7 +4,12 @@
 
 EnvironmentData::EnvironmentData()
 {
+	models = new vector<Model*>;
+}
 
+EnvironmentData::~EnvironmentData()
+{
+	delete models;
 }
 
 void EnvironmentData::setImageDimension(Dimension dimension)
@@ -96,4 +101,13 @@ void EnvironmentData::setDeviceLocation(Location location) {
 
 Location EnvironmentData::getDeviceLocation() {
 	return this->deviceLocation;
+}
+
+// adding models
+void EnvironmentData::addModel(Model* m) {
+	models->push_back(m);
+}
+
+vector<Model*>* EnvironmentData::getModels() {
+	return models;
 }

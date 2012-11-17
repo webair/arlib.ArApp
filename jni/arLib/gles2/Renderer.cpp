@@ -207,7 +207,6 @@ GLfloat const gCameraTexCoord[] = {
 Renderer::Renderer()
 {
 	// 10 should be enough for the moment...
-	models = new vector<Model*>;
 	printGLString("Version", GL_VERSION);
 	printGLString("Vendor", GL_VENDOR);
 	printGLString("Renderer", GL_RENDERER);
@@ -280,7 +279,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-	delete models;
 }
 
 // interface methods
@@ -360,6 +358,8 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glUseProgram(objectProgramRef);
     glClear( GL_DEPTH_BUFFER_BIT);
 
+    vector<Model*> *models = envData->getModels();
+
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
     	Model* m = models->at(i);
     	glm::mat4 MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * m->getModelMatrix();
@@ -381,14 +381,14 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     	}
 
 
-    	GLfloat *blubi = m->getVertices();
+    	//GLfloat *blubi = m->getVNT();
     	//LOGI("%f %f %f", blubi[0], blubi[1], blubi[2]);
 
-    	glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVertices());
+    	glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
     	checkGlError("glVertexAttribPointer");
 
     	//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
-    	glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVertices()+3);
+    	glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
     	checkGlError("glVertexAttribPointer");
 
     	glEnableVertexAttribArray(vsPositionRef);
@@ -504,12 +504,6 @@ void Renderer::linkProgram(GLuint programHandler) {
 		return;
 	}
 
-}
-
-// adding models
-
-void Renderer::addModel(Model* m) {
-	models->push_back(m);
 }
 
 void Renderer::printGLString(const char *name, GLenum s) {

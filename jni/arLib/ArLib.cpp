@@ -64,6 +64,10 @@ void ArLib::setDeviceOrientation(Orientation orientation) {
 	envData->setDeviceOrientation(orientation);
 }
 
+void ArLib::setDeviceLocation(Location location) {
+	envData->setDeviceLocation(location);
+}
+
 void ArLib::processImage(unsigned char *imageData)
 {
 	//TODO optimize
@@ -80,4 +84,8 @@ void ArLib::processImage(unsigned char *imageData)
 	renderer->loadTexture(envData->cameraTextrueRef,rgbaRaw, imageDimension.width, imageDimension.height);
 	renderer->renderFrame(envData);
 	free(rgbaRaw);
+}
+
+void ArLib::addModel(Model *m) {
+	envData->addModel(m);
 }

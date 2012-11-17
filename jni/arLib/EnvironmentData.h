@@ -36,9 +36,13 @@ public:
 	void setDeviceLocation(Location location);
 	Location getDeviceLocation();
 
+	void addModel(Model* m);
 	vector<Model*>* getModels();
+
 	mat4 getProjectionMatrix();
 	mat4 getViewMatrix();
+
+
 
 	float frustumDistanceRatio;
 private:
@@ -56,6 +60,9 @@ private:
 	Orientation deviceOrientation;
 	Location deviceLocation;
 	void createBaseProjection();
+
+	//models
+	vector<Model*>* models;
 
 };
 #endif
