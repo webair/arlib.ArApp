@@ -147,6 +147,7 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		openCamera();
 		setupCamera(1134, 720);
 		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical);
+		ArLib.addModel(new float[1], new short[1], new float[1], new float[1], 30.0f, 64.3f, 4.5f);
 	}
 
 	@Override

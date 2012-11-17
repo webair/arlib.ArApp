@@ -10,4 +10,7 @@ public class ArLib {
 
 	public static native void precessImage(byte[] imageData, float azimuth, float pitch, float roll, float[] rotationMatrix);
 
+	public static native void addModel(float[] vnt, short[] faces, 
+		float[] pointOfGravity, float[] boundingBox, float northAngle, 
+		float latitude, float longitude);
 }
