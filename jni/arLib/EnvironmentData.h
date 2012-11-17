@@ -33,6 +33,8 @@ public:
 	void setDeviceOrientation(Orientation orientation);
 	void setRotationMatrix(float *rotationMatrix);
 	Orientation getDeviceOrientation();
+	void setDeviceLocation(Location location);
+	Location getDeviceLocation();
 
 	vector<Model*>* getModels();
 	mat4 getProjectionMatrix();
@@ -52,7 +54,7 @@ private:
 	int imageRGBASize;
 
 	Orientation deviceOrientation;
-
+	Location deviceLocation;
 	void createBaseProjection();
 
 };

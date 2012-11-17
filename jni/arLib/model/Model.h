@@ -27,7 +27,6 @@ public:
 	mat4 getModelMatrix();
 
 
-
 protected:
 	GLuint numberOfVertices;
 	GLfloat* vertices;
