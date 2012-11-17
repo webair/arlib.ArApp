@@ -18,7 +18,6 @@ public:
 	// raw data
 	GLuint getNumberOfVertices();
 	GLfloat* getVertices();
-	GLfloat* getNormals();
 	GLuint getNumberOfFaces();
 	GLushort* getFaces();
 	GLfloat* getCenterOfGravity();
@@ -32,7 +31,6 @@ public:
 protected:
 	GLuint numberOfVertices;
 	GLfloat* vertices;
-	GLfloat* normals;
 	GLuint numberOfFaces;
 	GLushort *faces;
 	GLfloat centerOfGravity[3];

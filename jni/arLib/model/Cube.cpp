@@ -12,7 +12,8 @@ GLushort a_indices[]  = { 0, 1, 2,   2, 3, 0,      // front
                       16,17,18,  18,19,16,      // bottom
                       20,21,22,  22,23,20 };    // back
 
-GLfloat a_vertices[] = { 1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front)
+GLfloat a_vertices[] = {
+						1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front)
                        -1, 1, 1,   0, 0, 1,   1, 1, 0,              // v1
                        -1,-1, 1,   0, 0, 1,   1, 0, 0,              // v2
                         1,-1, 1,   0, 0, 1,   1, 0, 1,              // v3
@@ -46,7 +47,7 @@ Model::Model() {
 	numberOfVertices = 36;
 	vertices = (GLfloat *) new GLfloat[216];
 
-	for (int i = 0; i < 216; i++) {
+	for (int i = 0; i < 36*3*3; i++) {
 		vertices[i] = a_vertices[i];
 	}
 
@@ -93,6 +94,5 @@ GLuint Model::getNumberOfFaces() {
 }
 GLushort* Model::getFaces() {
 	return this->faces;
-
 }
 GLfloat* getCenterOfGravity();

@@ -39,6 +39,7 @@ static const char cameraFragmentShader[] =
 
 
 static const char objectVerticeShader[] =
+
 		"attribute vec4 a_position;"
 		"attribute vec2 a_texCoord;"
 		"attribute vec4 a_normal;"
@@ -46,30 +47,141 @@ static const char objectVerticeShader[] =
 		"uniform vec4 u_color;"
 		"varying vec2 v_texCoord;"
 		"varying vec4 v_color;"
-
+		"varying float lightintensity;"
+		"varying float depth;"
 
 		"void main()"
 		"{"
+			"vec4 newNormal = u_modelViewProjection * a_normal;"
+			"vec4 newPosition = u_modelViewProjection * a_position;"
+			"depth = newPosition.z;"
+			"gl_Position = newPosition;"
+			"lightintensity = max(0.0, dot(newNormal.xyz, vec3(0.0, 0.0, 1.0)));"
+			"v_color = u_color;"
+
+			/*
 			"gl_Position = u_modelViewProjection * a_position;"
 			"vec4 l_normal = u_modelViewProjection * a_normal;"
 			"vec3 l_lightSource = vec3(0.0, 0.0, 0.0);"
 			"vec3 lightVector = normalize(l_lightSource - gl_Position.xyz);"
 			"float distance = length(lightVector);"
 			"float fCosine = dot(l_normal.xyz, normalize(lightVector));"
-			"float fLamber = max(fCosine,0.1);"
-			"v_color = vec4(u_color.xyz * fLamber * (1.0 / (1.0 + (0.25 * distance * distance))),1.0);"
+			"float fLamber = max(fCosine,0.0);"
+			"v_color = normalize(vec4(u_color.xyz * fLamber * (1.0 / (1.0 + (0.3 * distance * distance))),1.0));"
 			"v_texCoord = a_texCoord;"
 			//"v_normal = l_normal.xyz;"
-		"}";
+			*/
+		"}"
+		;
+
+		/*
+		"precision highp float;"
+
+		// Matrices
+		//"uniform mat4 u_modelViewProjection;"
+		"uniform mat4 u_modelViewProjection;"
+
+		// Attributes
+		"attribute vec4 a_position;"
+		"attribute vec3 a_normal;"
+
+		// Varyings
+		"varying vec3 v_normal;"
+
+		"void main() "
+		"{"
+
+		    // Define position and normal in model coordinates
+		    "vec4 mcPosition = a_position;"
+		    "vec3 mcNormal = a_normal;"
+
+		    // Calculate and normalize eye space normal
+		    "vec3 ecNormal = vec3(u_modelViewProjection * vec4(mcNormal, 0.0));"
+		    "ecNormal = ecNormal / length(ecNormal);"
+		    "v_normal = a_normal;"
+
+		    "gl_Position = u_modelViewProjection * mcPosition;"
+		"}"
+		;
+		*/
 
 static const char objectFragmentShader[] =
+
 		"precision mediump float;"
+		"varying float lightintensity;"
 		"varying vec4 v_color;"
+		"varying float depth;"
 		"void main()\n"
 		"{"
+		"gl_FragColor = vec4((v_color*lightintensity*0.1).rgb, 1.0);"
+		//"gl_FragColor = vec3((v_color*lightintensity*0.1).rgb);"
 			//"vec4 ambient = gl_FrontMaterial.ambient;"
-			"gl_FragColor = v_color;"
-		"}";
+			//"gl_FragColor = v_color;"
+		"}"
+		;
+
+
+
+
+
+
+		/*
+		"precision highp float;"
+
+		"struct DirectionalLight "
+		"{"
+		    "vec3 direction;"
+		    "vec3 halfplane;"
+		    "vec4 ambientColor;"
+		    "vec4 diffuseColor;"
+		    "vec4 specularColor;"
+		"}"
+		";"
+
+		"struct Material"
+		"{"
+		    "vec4 ambientFactor;"
+		    "vec4 diffuseFactor;"
+		    "vec4 specularFactor;"
+		    "float shininess;"
+		"};"
+
+		// Light
+		"uniform DirectionalLight u_directionalLight;"
+
+		// Material
+		"uniform Material u_material;"
+
+		"varying vec3 v_normal;"
+
+		"void main() "
+		"{"
+
+		    // Normalize v_normal
+		    "vec3 ecNormal = v_normal / length(v_normal);"
+
+		    "float ecNormalDotLightDirection = max(0.0, dot(ecNormal, u_directionalLight.direction));"
+		    "float ecNormalDotLightHalfplane = max(0.0, dot(ecNormal, u_directionalLight.halfplane));"
+
+		    // Calculate ambient light
+		    "vec4 ambientLight = u_directionalLight.ambientColor * u_material.ambientFactor;"
+
+		    // Calculate diffuse light
+		    "vec4 diffuseLight = ecNormalDotLightDirection * u_directionalLight.diffuseColor * u_material.diffuseFactor;"
+
+		    // Calculate specular light
+		    "vec4 specularLight = vec4(0.0);"
+		    "if (ecNormalDotLightHalfplane > 0.0) "
+		    "{"
+		       "specularLight = pow(ecNormalDotLightHalfplane, u_material.shininess) * u_directionalLight.specularColor * u_material.specularFactor;"
+		    "}"
+
+		    "vec4 light = ambientLight + diffuseLight + specularLight;"
+
+		    "gl_FragColor = light;"
+		"}"
+		;
+		*/
 
 
 GLfloat const gCameraQuad[] = {
@@ -113,6 +225,8 @@ Renderer::Renderer()
 	objectVerticeShaderRef = loadShader(GL_VERTEX_SHADER, objectVerticeShader);
 	objectFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, objectFragmentShader);
 
+
+
 	// Create the program the camera image
 	cameraProgramRef = glCreateProgram();
 	if (cameraProgramRef == 0) {
@@ -141,19 +255,27 @@ Renderer::Renderer()
 	this->linkProgram(objectProgramRef);
 
 
-	vsPositionRef = glGetAttribLocation(cameraProgramRef, "a_position");
+	vsCameraPositionRef = glGetAttribLocation(cameraProgramRef, "a_position");
+	vsPositionRef = glGetAttribLocation(objectProgramRef, "a_position");
 	vsNormalRef = glGetAttribLocation(objectProgramRef, "a_normal");
-	LOGI("refpost: %d, normalred: %d", vsPositionRef, vsNormalRef);
+	LOGI("refpost: %d, normalred: %d, cameraPosRef: %d", vsPositionRef, vsNormalRef, vsCameraPositionRef);
 	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
     fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
     vsModelViewProjectionRef = glGetUniformLocation(objectProgramRef, "u_modelViewProjection");
     vsColorRef = glGetUniformLocation(objectProgramRef, "u_color");
 
     glUseProgram(objectProgramRef);
+    glEnable(GL_CULL_FACE);
+
     glEnable(GL_DEPTH_TEST);
-    glClearDepthf(1.0f);
-    glDepthFunc( GL_LEQUAL );
-    glDepthMask( true );
+    glDepthFunc(GL_LEQUAL);
+    //glDepthMask( true );
+
+    //glClearDepthf(1.0f);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 }
 
 Renderer::~Renderer()
@@ -215,12 +337,12 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     checkGlError("glUseProgram");
 
 
-    glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, gCameraQuad);
+    glVertexAttribPointer(vsCameraPositionRef, 3, GL_FLOAT, GL_FALSE, 0, gCameraQuad);
     checkGlError("glVertexAttribPointer");
     glVertexAttribPointer(vsTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gCameraTexCoord);
     checkGlError("glVertexAttribPointer");
 
-    glEnableVertexAttribArray(vsPositionRef);
+    glEnableVertexAttribArray(vsCameraPositionRef);
     checkGlError("glEnableVertexAttribArray");
 
     glEnableVertexAttribArray(vsTexCoordHandle);
@@ -234,7 +356,9 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
 
+    //glClear( GL_DEPTH_BUFFER_BIT);
     glUseProgram(objectProgramRef);
+    glClear( GL_DEPTH_BUFFER_BIT);
 
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
     	Model* m = models->at(i);
@@ -263,6 +387,7 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     	glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVertices());
     	checkGlError("glVertexAttribPointer");
 
+    	//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
     	glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVertices()+3);
     	checkGlError("glVertexAttribPointer");
 

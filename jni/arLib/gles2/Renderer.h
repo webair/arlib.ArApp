@@ -31,6 +31,7 @@ private:
 	GLuint vsModelViewProjectionRef;
 	GLuint vsColorRef;
 	GLuint vsPositionRef;
+	GLuint vsCameraPositionRef;
 	GLuint vsNormalRef;
 
 

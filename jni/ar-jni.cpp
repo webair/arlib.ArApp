@@ -44,59 +44,72 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		rImageHeight = (int)imageHeight;
 
 		//test adding models
+
+		//north
 		Model *myModel = new Cube;
 	    glm::mat4 View = mat4(1.0f);
-
-	    //north
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
-	    myModel->setModelMatrix(View);
-		r->addModel(myModel);
-
+	    //east
 		myModel = new Cube;
 	    View = mat4(1.0f);
-
-	    //east
 	    View = rotate(View, -90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
 	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
+
+
+		//south
+
 		myModel = new Cube;
 	    View = mat4(1.0f);
-
-	    //south
-	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -10.0f));
-
+	    View = glm::rotate(View, 5.0f, glm::vec3(0.0f,1.0f,0.0f));
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -11.0f));
+	    View = glm::rotate(View, 45.0f, glm::vec3(0.0f,1.0f,0.0f));
 	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
+
 		myModel = new Cube;
 	    View = mat4(1.0f);
+	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, -10.0f));
+	    View = glm::rotate(View, 45.0f, glm::vec3(0.0f,1.0f,0.0f));
+	    myModel->setModelMatrix(View);
+		r->addModel(myModel);
+
+
+
+
+
+
+
+
+
 
 	    //west
+		myModel = new Cube;
+	    View = mat4(1.0f);
 	    View = rotate(View, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	    View = glm::translate(View, glm::vec3(0.0f, 0.0f, 10.0f));
 
 	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
-		myModel = new Cube;
-	    View = mat4(1.0f);
 
 	    //down
+		myModel = new Cube;
+	    View = mat4(1.0f);
 	    View = glm::translate(View, glm::vec3(0.0f, -10.0f, 0.0f));
 
 	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 
+	    //up
 		myModel = new Cube;
 	    View = mat4(1.0f);
-
-	    //up
 	    View = glm::translate(View, glm::vec3(0.0f, 10.0f, 0.0f));
-
 	    myModel->setModelMatrix(View);
 		r->addModel(myModel);
 

@@ -50,9 +50,11 @@ public class OpenGLSurfaceView extends GLSurfaceView {
          * custom config chooser. See ConfigChooser class definition
          * below.
          */
-        setEGLConfigChooser( translucent ?
-                             new ConfigChooser(8, 8, 8, 8, depth, stencil) :
-                             new ConfigChooser(5, 6, 5, 0, depth, stencil) );
+        setEGLConfigChooser( //translucent ?
+                             new ConfigChooser(8, 8, 8, 8, 24, 0) //:
+                             //new ConfigChooser(8, 8, 8, 8, 16, 0) //:
+                             //new ConfigChooser(5, 6, 5, 0, depth, stencil) 
+                             );
 
         /* Set the renderer responsible for frame rendering */
         setRenderer(renderer);

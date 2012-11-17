@@ -55,7 +55,8 @@ void EnvironmentData::createBaseProjection()
     LOGI("frustum angle: %f", frustumAngle);
     LOGI("frustum distance ratio: %f", frustumDistanceRatio);
 
-    mat4 projection = perspective(this->getVerticalAngle(), this->getImageRatio(), frustumNear, frustumFar);
+    mat4 projection = perspective(frustumAngle, this->getImageRatio(), frustumNear, frustumFar);
+    //mat4 projection = perspective(40.0f, this->getImageRatio(), frustumNear, frustumFar);
     baseProjection = new mat4(projection);
 }
 
