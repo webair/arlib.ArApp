@@ -105,8 +105,28 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
   (JNIEnv *env, jclass obj,
 		  jfloatArray vntArray, jshortArray facesArray,
-		  jfloatArray pogArray , jfloatArray bbArray, jfloat northAngle,
+		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
 		  jfloat latitude, jfloat longitude) {
+
+	jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
+	jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
+	jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
+	jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
+
+	Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
+			(GLushort *)facesRaw, env->GetArrayLength(facesArray),
+			(GLfloat *)cogRaw, (GLfloat *)bbRaw,
+			(float) northAngle);
+
+    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
+
+    myModel->setWorldMatrix(View);
+    arLib->addModel(myModel);
+
+	env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
+	env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
+    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
+    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
 
 
 }
