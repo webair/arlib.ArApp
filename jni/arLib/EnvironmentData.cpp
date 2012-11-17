@@ -88,3 +88,11 @@ glm::mat4 EnvironmentData::getViewMatrix()
 {
 	return rotate(rotate(rotate(mat4(), (deviceOrientation.roll * 180.0f) / 3.14159265f, vec3(0.0f, 0.0f, 1.0f)), (deviceOrientation.pitch * 180.0f) / 3.14159265f, vec3(1.0f, 0.0f, 0.0f)), (deviceOrientation.azimuth * 180.0f) / 3.14159265f, vec3(0.0f, 1.0f, 0.0f));
 }
+
+void EnvironmentData::setDeviceLocation(Location location) {
+	this->deviceLocation = location;
+}
+
+Location EnvironmentData::getDeviceLocation() {
+	return this->deviceLocation;
+}

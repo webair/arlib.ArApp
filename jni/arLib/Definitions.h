@@ -22,4 +22,9 @@ struct Rect {
 	Point origin;
 };
 
+struct Location {
+	float longitude;
+	float latitude;
+
+};
 #endif
