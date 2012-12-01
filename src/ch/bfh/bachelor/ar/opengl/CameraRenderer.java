@@ -1,6 +1,7 @@
 package ch.bfh.bachelor.ar.opengl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -16,6 +17,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.ArLib;
 
 public class CameraRenderer implements GLSurfaceView.Renderer, 
@@ -78,8 +80,11 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 	public boolean hasImage = false;
 	private Camera cam;
 	
-	public CameraRenderer(Context context)
+	private ArrayList<Object3D> models;
+
+	public CameraRenderer(Context context, ArrayList<Object3D> models)
 	{
+		this.models = models;
 		//Change Sensor Delay Here
 		sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
 		sm = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
@@ -146,8 +151,25 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 		openSensor();
 		openCamera();
 		setupCamera(1134, 720);
-		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical);
-		ArLib.addModel(new float[1], new short[1], new float[1], new float[1], 30.0f, 64.3f, 4.5f);
+		Object3D b = models.get(0);
+		   short[] facesSh = new short[b.face.length];
+		   float[] bbox = new float[24];
+		   for(int q=0;q<8;q++)
+		   {
+			   for(int u=0;u<3;u++)
+			   {
+				   bbox[q*u] = b.bb[q][u];
+			   }
+		   }
+		   for(int j =0;j<b.face.length;j++)
+		   {
+			   facesSh[j] = (short) b.face[j];
+		   }
+					   
+//		  ArLib.addModel();
+		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical, b.vnt, facesSh, b.pointOfGravity, bbox, b.northangle, b.lat, b.lon);
+		//Übergeben der Objekte..
+
 	}
 
 	@Override

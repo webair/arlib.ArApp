@@ -43,21 +43,26 @@ static const char objectVerticeShader[] =
 		"attribute vec4 a_position;"
 		"attribute vec2 a_texCoord;"
 		"attribute vec4 a_normal;"
-		"uniform mat4 u_modelViewProjection;"
+		"uniform mat4 u_projectionView;"
+		"uniform mat4 u_modelView;"
 		"uniform vec4 u_color;"
 		"varying vec2 v_texCoord;"
 		"varying vec4 v_color;"
-		"varying float lightintensity;"
+		"varying vec4 diffuse;"
 		"varying float depth;"
 
 		"void main()"
 		"{"
-			"vec4 newNormal = u_modelViewProjection * a_normal;"
-			"vec4 newPosition = u_modelViewProjection * a_position;"
-			"depth = newPosition.z;"
+			"vec4 newNormal = u_projectionView * u_modelView * a_normal;"
+			"vec4 newPosition = u_projectionView * u_modelView * a_position;"
+
+			//diffuse loight calculation
+			"vec3 s = normalize(newPosition.xyz-vec3(0.0, 200.0, -300.0));"
+			"v_color = u_color * max(0.0, dot(normalize(newNormal.xyz), s));"
+
 			"gl_Position = newPosition;"
-			"lightintensity = max(0.0, dot(newNormal.xyz, vec3(0.0, 0.0, 1.0)));"
-			"v_color = u_color;"
+			//"lightintensity = 1.0;"
+			//"v_color = u_color;"
 
 			/*
 			"gl_Position = u_modelViewProjection * a_position;"
@@ -108,12 +113,11 @@ static const char objectVerticeShader[] =
 static const char objectFragmentShader[] =
 
 		"precision mediump float;"
-		"varying float lightintensity;"
 		"varying vec4 v_color;"
 		"varying float depth;"
 		"void main()\n"
 		"{"
-		"gl_FragColor = vec4((v_color*lightintensity*0.1).rgb, 1.0);"
+		"gl_FragColor = vec4(v_color.rgb,1.0);"
 		//"gl_FragColor = vec3((v_color*lightintensity*0.1).rgb);"
 			//"vec4 ambient = gl_FrontMaterial.ambient;"
 			//"gl_FragColor = v_color;"
@@ -260,11 +264,13 @@ Renderer::Renderer()
 	LOGI("refpost: %d, normalred: %d, cameraPosRef: %d", vsPositionRef, vsNormalRef, vsCameraPositionRef);
 	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
     fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
-    vsModelViewProjectionRef = glGetUniformLocation(objectProgramRef, "u_modelViewProjection");
+    vsModelViewRef = glGetUniformLocation(objectProgramRef, "u_modelView");
+    vsProjectionViewRef = glGetUniformLocation(objectProgramRef, "u_projectionView");
     vsColorRef = glGetUniformLocation(objectProgramRef, "u_color");
 
     glUseProgram(objectProgramRef);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -360,47 +366,94 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 
     vector<Model*> *models = envData->getModels();
 
+    bool showNormals = false;
+    glm::mat4 PM = envData->getProjectionMatrix() * envData->getViewMatrix();
+    glUniformMatrix4fv(vsProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
+
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
     	Model* m = models->at(i);
-    	glm::mat4 MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * m->getModelMatrix();
-    	glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
-    	if (i==0) {
-        	glUniform4f(vsColorRef,  0.0f,  1.0f,  1.0f,  1.0f);
-    	} else if (i==1) {
-    		glUniform4f(vsColorRef,  1.0f,  1.0f,  1.0f,  1.0f);
-    	} else if (i==2) {
-    		glUniform4f(vsColorRef,  1.0f,  0.0f,  1.0f,  1.0f);
-    	} else if (i==3) {
-    		glUniform4f(vsColorRef,  1.0f,  1.0f,  0.0f,  1.0f);
-    	} else if (i==4) {
-    		glUniform4f(vsColorRef,  1.0f,  0.0f,  0.0f,  1.0f);
-    	}else if (i==5) {
-    		glUniform4f(vsColorRef,  0.0f,  1.0f,  0.0f,  1.0f);
-    	} else {
-    		glUniform4f(vsColorRef,  1.0f,  0.0f,  0.0f,  1.0f);
-    	}
+    	glUniformMatrix4fv(vsModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
+
+        glUniform4f(vsColorRef,  0.0f,  1.0f,  1.0f,  1.0f);
 
 
     	//GLfloat *blubi = m->getVNT();
     	//LOGI("%f %f %f", blubi[0], blubi[1], blubi[2]);
 
-    	glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
-    	checkGlError("glVertexAttribPointer");
 
-    	//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
-    	glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
-    	checkGlError("glVertexAttribPointer");
+        if (!showNormals) {
+			glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
+			checkGlError("glVertexAttribPointer");
 
-    	glEnableVertexAttribArray(vsPositionRef);
-    	checkGlError("glEnableVertexAttribArray");
+			//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
+			glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
+			checkGlError("glVertexAttribPointer");
+
+			glEnableVertexAttribArray(vsPositionRef);
+			checkGlError("glEnableVertexAttribArray");
+			glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
+			//glDrawArrays(GL_TRIANGLES, 0, 3);
+			checkGlError("glDrawElemnts");
+        } else {
+        	//draw normals
+        	/*
+    		float line[] = {-1.0f, -1.0f, 1.0f,//0.0f, 0.0f, 1.0f,
+    						1.0f, 0.0f, 0.0f,
+    					   };
+    		float normals[] = {0.0f, 0.0f, 1.0f,
+    							0.0f, 0.0f, 1.0f,
+    					   };
+
+        	glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, line);
+			checkGlError("glVertexAttribPointer normal position");
+        	glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, normals);
+        	checkGlError("glVertexAttribPointer normal normals");
+
+        	GLushort index[] = {0,1};
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, index);
+			checkGlError("glDrawElements normal");
+			*/
 
 
-    	glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
-    	//glDrawArrays(GL_TRIANGLES, 0, 3);
-    	checkGlError("glDrawElemnts");
+        	for (int i = 0; i < m->getNumberOfVNT(); i++) {
+        		if (i%9 == 0) {
+
+        			float scale = 4.0f;
+
+					float xPos = m->getVNT()[i];
+					float yPos = m->getVNT()[i + 1];
+					float zPos = m->getVNT()[i + 2];
+
+					float xNorm = m->getVNT()[i + 3] * scale;
+					float yNorm = m->getVNT()[i + 4] * scale;
+					float zNorm = m->getVNT()[i + 5] * scale;
+
+					//glm::vec3 normale = glm::normalize(vec3(xNorm, yNorm, zNorm));
+					//LOGI("xPos & xNorm : %f & %f",xPos, xNorm * 30.0f);
+
+					GLfloat line[] = {xPos, yPos, zPos,//0.0f, 0.0f, 1.0f,
+							xPos + xNorm, yPos + yNorm, zPos + zNorm
+								   };
+					GLfloat normals[] = {0.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 1.0f
+								   };
+					glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, line);
+					checkGlError("glVertexAttribPointer normal position");
+					//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, normals);
+					//checkGlError("glVertexAttribPointer normal normals");
+
+					GLushort index[] = {0,1};
+					glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, index);
+					checkGlError("glDrawElements normal");
+
+      			}
+        	}
+
+        }
+
     }
 
-
+    /*
     GLfloat xAxis[] = {
     	0.0f, 0.0f, 10.0f,
     	100.0f, 0.0f, 10.0f
@@ -442,7 +495,7 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     checkGlError("glEnableVertexAttribArray");
     glDrawArrays(GL_LINES, 0, 2);
     checkGlError("glDrawArrays");
-
+	*/
 	/*
 	//calculate FPS
 	 struct timespec res;

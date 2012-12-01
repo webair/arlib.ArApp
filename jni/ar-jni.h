@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     ch_bfh_bachelor_ar_ArLib
  * Method:    initArLib
- * Signature: (IIIIF)V
+ * Signature: (IIIIF[F[S[F[FFFF)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
-  (JNIEnv *, jclass, jint, jint, jint, jint, jfloat);
+  (JNIEnv *, jclass, jint, jint, jint, jint, jfloat, jfloatArray, jshortArray, jfloatArray, jfloatArray, jfloat, jfloat, jfloat);
 
 /*
  * Class:     ch_bfh_bachelor_ar_ArLib

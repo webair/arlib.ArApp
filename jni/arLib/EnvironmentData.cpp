@@ -51,7 +51,7 @@ float EnvironmentData::getVerticalAngle()
 void EnvironmentData::createBaseProjection()
 {
 	frustumNear = 1.0f;
-	frustumFar = 100.0f;
+	frustumFar = 1000.0f;
 	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
 
     LOGI("setup graphics:");
@@ -93,6 +93,7 @@ glm::mat4 EnvironmentData::getProjectionMatrix()
 glm::mat4 EnvironmentData::getViewMatrix()
 {
 	return rotate(rotate(rotate(mat4(), (deviceOrientation.roll * 180.0f) / 3.14159265f, vec3(0.0f, 0.0f, 1.0f)), (deviceOrientation.pitch * 180.0f) / 3.14159265f, vec3(1.0f, 0.0f, 0.0f)), (deviceOrientation.azimuth * 180.0f) / 3.14159265f, vec3(0.0f, 1.0f, 0.0f));
+	//return mat4();
 }
 
 void EnvironmentData::setDeviceLocation(Location location) {

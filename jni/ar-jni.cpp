@@ -9,9 +9,6 @@
 #include "arLib/EnvironmentData.h"
 #include "arLib/Definitions.h"
 
-
-
-
 using namespace cv;
 using namespace std;
 using namespace glm;
@@ -63,8 +60,11 @@ GLfloat a_vertices[] = {
 extern "C" {
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
-  (JNIEnv *env, jclass obj, jint screenWidth, jint screenHeight, jint imageWidth, jint imageHeight, jfloat cameraAngle)
+  (JNIEnv *env, jclass obj, jint screenWidth, jint screenHeight, jint imageWidth, jint imageHeight, jfloat cameraAngle, jfloatArray vntArray, jshortArray facesArray,
+		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
+		  jfloat latitude, jfloat longitude)
 	{
+		LOGI("initializing ArLib");
 		//test ArLib
 		Renderer *r = new Renderer();
 
@@ -84,6 +84,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		//test adding models
 
 	    //east
+		/*
 		float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
 		float boundingBox[36];
 		Model *myModel = new Model(a_vertices, 9*4*6,
@@ -91,10 +92,42 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 				 centerOfGravity, boundingBox,
 				  45.0f);
 
-	    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
+	    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, -5.0f));
 
 	    myModel->setWorldMatrix(View);
 	    arLib->addModel(myModel);
+	*/
+		jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
+		jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
+		jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
+		jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
+
+		LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
+		LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
+
+		Location modelLocation;
+		modelLocation.latitude = latitude;
+		modelLocation.longitude = longitude;
+
+		// bundeshaus lat/lng 46.94645 / 7.44421
+		Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
+				(GLushort *)facesRaw, env->GetArrayLength(facesArray),
+				(GLfloat *)cogRaw, (GLfloat *)bbRaw,
+				(float) northAngle, modelLocation);
+
+		//mat4 View = glm::scale(mat4(), glm::vec3(0.01f, 0.01f, 0.01f));
+	    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, -60.1f));
+	    //View = glm::rotate(View, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	    myModel->setWorldMatrix(View);
+
+	    arLib->addModel(myModel);
+
+		env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
+		env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
+	    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
+	    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
+
 	}
 
 /*
@@ -107,11 +140,14 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 		  jfloatArray vntArray, jshortArray facesArray,
 		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
 		  jfloat latitude, jfloat longitude) {
-
+	/*
 	jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
 	jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
 	jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
 	jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
+
+	LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
+	LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
 
 	Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
 			(GLushort *)facesRaw, env->GetArrayLength(facesArray),
@@ -121,14 +157,14 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
     mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
 
     myModel->setWorldMatrix(View);
-    arLib->addModel(myModel);
 
+    arLib->addModel(myModel);
 	env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
 	env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
     env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
     env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
 
-
+    */
 }
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
@@ -136,7 +172,6 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 		  jfloat pitch, jfloat roll, jfloatArray rotationMatrixArray)
 	{
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
-
 		Orientation orientation;
 		orientation.azimuth = (float) azimuth;
 		//orientation.roll = 0.0f;

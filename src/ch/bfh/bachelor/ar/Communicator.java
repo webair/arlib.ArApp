@@ -1,10 +1,6 @@
 package ch.bfh.bachelor.ar;
 
-import android.util.Log;
-import android.widget.TextView;
-
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,8 +9,8 @@ import java.io.StreamCorruptedException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
 
+import android.util.Log;
 import ch.bfh.arApp.com.GetObjects;
 import ch.bfh.arApp.com.SendObjects;
 import ch.bfh.arApp.model3D.Object3D;
@@ -26,13 +22,11 @@ public class Communicator implements Runnable
 	public String msg;
 	public ArrayList<Object3D> l;
 	String ip;
-	TextView t;
 	int port;
 	private Socket socket;
 	
 	public Communicator (String ip, int port)
 	{
-		this.t = t;
 		this.ip=ip;
 		this.port=port;
 	}

@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.opengl.CameraRenderer;
 import ch.bfh.bachelor.ar.opengl.OpenGLSurfaceView;
@@ -31,11 +30,31 @@ public class MainActivity extends Activity {
 				{
 					Log.i(TAG, "OpenCV loaded successfully");
 
+
+					if(loadModules)
+					{
+					       l = null;
+					       Communicator c = new Communicator("83.169.4.84", 3131);
+					       Thread a = new Thread(c);
+					       a.start();
+					       try {
+					    	   a.join();
+					    	   l = c.l;
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+					       if(l!=null)
+					       {
+					    	   cr = new CameraRenderer(MainActivity.this, l);
+					       }
+					}
 					//instantiate open gl renderer
-					cr = new CameraRenderer(MainActivity.this);
 					
 					View mainView = new OpenGLSurfaceView(getApplication(), cr);					
 					setContentView(mainView);
+					
+
 					
 				} 
 				break;
@@ -50,44 +69,6 @@ public class MainActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		if(loadModules)
-		{
-		       l = null;
-		       Communicator c = new Communicator("83.169.4.84", 3131);
-		       Thread a = new Thread(c);
-		       a.start();
-		       try {
-		    	   a.join();
-		    	   l = c.l;
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		       if(l!=null)
-		       {
-		    	   //Übergeben der Objekte..
-		    	   for(int i=0;i<l.size();i++)
-		    	   {
-		    		   Object3D b = l.get(i);
-		    		   short[] facesSh = new short[b.face.length];
-		    		   float[] bbox = new float[24];
-		    		   for(int q=0;q<8;q++)
-		    		   {
-		    			   for(int u=0;u<3;u++)
-		    			   {
-		    				   bbox[q*u] = b.bb[q][u];
-		    			   }
-		    		   }
-		    		   for(int j =0;j<b.face.length;j++)
-		    		   {
-		    			   facesSh[j] = (short) b.face[j];
-		    		   }
-		    					   
-		    		   ArLib.addModel(b.vnt, facesSh, b.pointOfGravity, bbox, b.northangle, b.lat, b.lon);
-		    	   }
-		       }
-		}
 		
         if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_2, this, mOpenCVCallBack))
         {

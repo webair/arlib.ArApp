@@ -1,6 +1,8 @@
 #include "ArLib.h"
 #include "util/Logger.h"
+#include "arLib/util/GeoMath.h"
 
+using namespace glm;
 
 
 ArLib::ArLib(Renderer* r,
@@ -70,18 +72,42 @@ void ArLib::setDeviceLocation(Location location) {
 
 void ArLib::processImage(unsigned char *imageData)
 {
-	//TODO optimize
+	//convert camera image
 	Dimension imageDimension = envData->getImageDimension();
-
 	int imageWidth = (int) imageDimension.width;
 	int imageHeight = (int) imageDimension.height;
-
 	Mat yuv(imageHeight + imageHeight/2, imageWidth, CV_8UC1, (unsigned char *)imageData);
 	unsigned char* rgbaRaw = (unsigned char *)malloc(envData->getImageRGBASize() * sizeof(unsigned char));
 	Mat rgba(imageHeight, imageWidth, CV_8UC4, rgbaRaw);
 	cvtColor(yuv, rgba, CV_YUV420sp2RGBA);
-
+	// display camera image
 	renderer->loadTexture(envData->cameraTextrueRef,rgbaRaw, imageDimension.width, imageDimension.height);
+
+	Location rathuusgass57;
+	rathuusgass57.latitude = 46.94847f;
+	rathuusgass57.longitude = 7.45024f;
+
+	Location vorDemBundeshaus;
+	vorDemBundeshaus.latitude = 46.947337f;
+	vorDemBundeshaus.longitude = 7.443957f;
+
+
+	// position models
+	vector<Model*> *models = envData->getModels();
+    for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
+    	Model* m = models->at(i);
+    	float d = GeoMath::getDistance(vorDemBundeshaus,m->getLocation());
+    	float a = GeoMath::getAngle(vorDemBundeshaus, m->getLocation());
+
+    	//LOGI("distance: %f, angle: %f",d,a);
+
+    	mat4 view = rotate(mat4(), -a, vec3(0.0f, 1.0f, 0.0f));
+    	view = translate(view, vec3(0.0f,0.0f, -d));
+    	view = rotate(view, a, vec3(0.0f, 1.0f, 0.0f));
+    	m->setWorldMatrix(view);
+    }
+
+
 	renderer->renderFrame(envData);
 	free(rgbaRaw);
 }

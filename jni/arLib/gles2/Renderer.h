@@ -25,7 +25,8 @@ private:
 	// openGL ref values
 	GLuint cameraProgramRef;
 	GLuint objectProgramRef;
-	GLuint vsModelViewProjectionRef;
+	GLuint vsModelViewRef;
+	GLuint vsProjectionViewRef;
 	GLuint vsColorRef;
 	GLuint vsPositionRef;
 	GLuint vsCameraPositionRef;

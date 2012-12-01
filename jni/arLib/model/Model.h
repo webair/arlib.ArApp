@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "arLib/Definitions.h"
 
 using namespace glm;
 
@@ -16,10 +17,11 @@ public:
 	Model(GLfloat* vnt, int numberOfVNT,
 		  GLushort* faces, int numberOfFaces,
 		  GLfloat* centerOfGravity, GLfloat* boundingBox,
-		  GLfloat northAngle);
+		  GLfloat northAngle, Location location);
 	~Model();
 
 	// raw data vertices, normals & textures
+	GLuint getNumberOfVNT();
 	GLfloat* getVNT();
 
 	//faces
@@ -36,8 +38,11 @@ public:
 	//returns all the translation and rotation needed to display object
 	mat4 getModelMatrix();
 
+	Location getLocation();
+
 
 protected:
+	GLuint numberOfVNT;
 	GLfloat* vnt;
 
 	GLuint numberOfFaces;
@@ -49,6 +54,8 @@ protected:
 	mat4* modelMatrix;
 	//defines the matrxix to move the object to 0 coord and rotate relative to north angle
 	mat4* objectMatrix;
+
+	Location location;
 };
 
 #endif

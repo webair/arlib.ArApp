@@ -6,7 +6,10 @@ public class ArLib {
 	}
 
 	public static native void initArLib(int viewPortWidth, int viewPortHeight,
-			int imageWith, int imageHeight, float cameraAngle);
+			int imageWith, int imageHeight, float cameraAngle, 
+			float[] vnt, short[] faces, 
+			float[] pointOfGravity, float[] boundingBox, float northAngle, 
+			float latitude, float longitude);
 
 	public static native void precessImage(byte[] imageData, float azimuth, float pitch, float roll, float[] rotationMatrix);
 
