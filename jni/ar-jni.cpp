@@ -28,34 +28,34 @@ GLushort a_indices[]  = { 0, 1, 2,   2, 3, 0,      // front
 
 GLfloat a_vertices[] = {
 						1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front)
-                       -1, 1, 1,   0, 0, 1,   1, 1, 0,              // v1
-                       -1,-1, 1,   0, 0, 1,   1, 0, 0,              // v2
+                       -1, 1, 1,   0, 0, 1,   0, 1, 1,              // v1
+                       -1,-1, 1,   0, 0, 1,   0, 0, 1,              // v2
                         1,-1, 1,   0, 0, 1,   1, 0, 1,              // v3
 
                         1, 1, 1,   1, 0, 0,   1, 1, 1,              // v0 (right)
-                        1,-1, 1,   1, 0, 0,   1, 0, 1,              // v3
+                        1,-1, 1,   1, 0, 0,   0, 1, 1,              // v3
                         1,-1,-1,   1, 0, 0,   0, 0, 1,              // v4
-                        1, 1,-1,   1, 0, 0,   0, 1, 1,              // v5
+                        1, 1,-1,   1, 0, 0,   1, 0, 1,              // v5
 
                         1, 1, 1,   0, 1, 0,   1, 1, 1,              // v0 (top)
                         1, 1,-1,   0, 1, 0,   0, 1, 1,              // v5
-                       -1, 1,-1,   0, 1, 0,   0, 1, 0,              // v6
-                       -1, 1, 1,   0, 1, 0,   1, 1, 0,              // v1
+                       -1, 1,-1,   0, 1, 0,   0, 0, 1,              // v6
+                       -1, 1, 1,   0, 1, 0,   1, 0, 1,              // v1
 
-                       -1, 1, 1,  -1, 0, 0,   1, 1, 0,              // v1 (left)
-                       -1, 1,-1,  -1, 0, 0,   0, 1, 0,              // v6
-                       -1,-1,-1,  -1, 0, 0,   0, 0, 0,              // v7
-                       -1,-1, 1,  -1, 0, 0,   1, 0, 0,              // v2
+                       -1, 1, 1,  -1, 0, 0,   1, 1, 1,              // v1 (left)
+                       -1, 1,-1,  -1, 0, 0,   0, 1, 1,              // v6
+                       -1,-1,-1,  -1, 0, 0,   0, 0, 1,              // v7
+                       -1,-1, 1,  -1, 0, 0,   1, 0, 1,              // v2
 
-                       -1,-1,-1,   0,-1, 0,   0, 0, 0,              // v7 (bottom)
-                        1,-1,-1,   0,-1, 0,   0, 0, 1,              // v4
-                        1,-1, 1,   0,-1, 0,   1, 0, 1,              // v3
-                       -1,-1, 1,   0,-1, 0,   1, 0, 0,              // v2
+                       -1,-1,-1,   0,-1, 0,   1, 1, 1,              // v7 (bottom)
+                        1,-1,-1,   0,-1, 0,   0, 1, 1,              // v4
+                        1,-1, 1,   0,-1, 0,   0, 0, 1,              // v3
+                       -1,-1, 1,   0,-1, 0,   1, 0, 1,              // v2
 
-                        1,-1,-1,   0, 0,-1,   0, 0, 1,              // v4 (back)
+                        1,-1,-1,   0, 0,-1,   1, 1, 1,              // v4 (back)
                        -1,-1,-1,   0, 0,-1,   0, 0, 0,              // v7
                        -1, 1,-1,   0, 0,-1,   0, 1, 0,              // v6
-                        1, 1,-1,   0, 0,-1,   0, 1, 1 };            // v5
+                        1, 1,-1,   0, 0,-1,   1, 0, 1 };            // v5
 
 extern "C" {
 
@@ -83,20 +83,22 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 
 		//test adding models
 
+
+		Location modelLocation;
+		modelLocation.latitude = latitude;
+		modelLocation.longitude = longitude;
+
 	    //east
-		/*
+
 		float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
 		float boundingBox[36];
-		Model *myModel = new Model(a_vertices, 9*4*6,
+		Model *cube = new Model(a_vertices, 9*4*6,
 				 a_indices, 6*6,
 				 centerOfGravity, boundingBox,
-				  45.0f);
+				  0.0f, modelLocation);
+	    arLib->addModel(cube);
 
-	    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, -5.0f));
 
-	    myModel->setWorldMatrix(View);
-	    arLib->addModel(myModel);
-	*/
 		jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
 		jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
 		jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
@@ -105,21 +107,13 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
 		LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
 
-		Location modelLocation;
-		modelLocation.latitude = latitude;
-		modelLocation.longitude = longitude;
+
 
 		// bundeshaus lat/lng 46.94645 / 7.44421
 		Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
 				(GLushort *)facesRaw, env->GetArrayLength(facesArray),
 				(GLfloat *)cogRaw, (GLfloat *)bbRaw,
 				(float) northAngle, modelLocation);
-
-		//mat4 View = glm::scale(mat4(), glm::vec3(0.01f, 0.01f, 0.01f));
-	    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, -60.1f));
-	    //View = glm::rotate(View, 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-
-	    myModel->setWorldMatrix(View);
 
 	    arLib->addModel(myModel);
 

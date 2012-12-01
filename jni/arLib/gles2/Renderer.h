@@ -20,7 +20,8 @@ public:
 	GLuint generateTexture();
 	void loadTexture(GLuint glRef, GLubyte* pixels, float width, float height);
 	void renderFrame(EnvironmentData *envData);
-
+	//render without displaying
+	GLubyte* createSearchPattern(EnvironmentData *envData);
 private:
 	// openGL ref values
 	GLuint cameraProgramRef;
@@ -32,12 +33,15 @@ private:
 	GLuint vsCameraPositionRef;
 	GLuint vsNormalRef;
 
+	GLuint searchPatternBufferRef;
 
 	GLuint vsTexCoordHandle;
+	GLuint vsObjectTexCoordHandle;
 
 
 	// camera specific
 	GLuint fsCameraTextureRef;
+	GLuint fsObjectTextureRef;
 
 	static void printGLString(const char *name, GLenum s);
 	static void checkGlError(const char* op);

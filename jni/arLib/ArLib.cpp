@@ -24,8 +24,9 @@ ArLib::ArLib(Renderer* r,
 
 	// create camera texture
 	envData->cameraTextrueRef = r->generateTexture();
+	envData->objectTextrueRef = r->generateTexture();
 
-	LOGI("generate camera texture: ref=%d", envData->cameraTextrueRef);
+	LOGI("generate camera/ obj texture: %d / %d", envData->cameraTextrueRef, envData->objectTextrueRef);
 }
 
 void ArLib::createViewport(float availableWidth, float availableHeight)
@@ -104,9 +105,19 @@ void ArLib::processImage(unsigned char *imageData)
     	mat4 view = rotate(mat4(), -a, vec3(0.0f, 1.0f, 0.0f));
     	view = translate(view, vec3(0.0f,0.0f, -d));
     	view = rotate(view, a, vec3(0.0f, 1.0f, 0.0f));
+    	//only resize cube
+    	if (i==0) {
+    		view = scale(view, vec3(21.0f, 21.0f, 21.0f));
+    	}
     	m->setWorldMatrix(view);
     }
 
+
+    GLubyte *searchPattern = renderer->createSearchPattern(envData);
+	renderer->loadTexture(envData->objectTextrueRef,searchPattern, imageDimension.width, imageDimension.height);
+
+	//exit(-1);
+	free(searchPattern);
 
 	renderer->renderFrame(envData);
 	free(rgbaRaw);

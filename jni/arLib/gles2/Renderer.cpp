@@ -50,6 +50,7 @@ static const char objectVerticeShader[] =
 		"varying vec4 v_color;"
 		"varying vec4 diffuse;"
 		"varying float depth;"
+		"varying vec2 v_otexCoord;"
 
 		"void main()"
 		"{"
@@ -59,7 +60,7 @@ static const char objectVerticeShader[] =
 			//diffuse loight calculation
 			"vec3 s = normalize(newPosition.xyz-vec3(0.0, 200.0, -300.0));"
 			"v_color = u_color * max(0.0, dot(normalize(newNormal.xyz), s));"
-
+			"v_otexCoord = a_texCoord;"
 			"gl_Position = newPosition;"
 			//"lightintensity = 1.0;"
 			//"v_color = u_color;"
@@ -115,9 +116,12 @@ static const char objectFragmentShader[] =
 		"precision mediump float;"
 		"varying vec4 v_color;"
 		"varying float depth;"
+		"uniform sampler2D s_texture;"
+		"varying vec2 v_otexCoord;"
 		"void main()\n"
 		"{"
-		"gl_FragColor = vec4(v_color.rgb,1.0);"
+		//"gl_FragColor = vec4(v_color.rgb,1.0);"
+		"gl_FragColor = texture2D( s_texture, v_otexCoord );"
 		//"gl_FragColor = vec3((v_color*lightintensity*0.1).rgb);"
 			//"vec4 ambient = gl_FrontMaterial.ambient;"
 			//"gl_FragColor = v_color;"
@@ -263,7 +267,10 @@ Renderer::Renderer()
 	vsNormalRef = glGetAttribLocation(objectProgramRef, "a_normal");
 	LOGI("refpost: %d, normalred: %d, cameraPosRef: %d", vsPositionRef, vsNormalRef, vsCameraPositionRef);
 	vsTexCoordHandle = glGetAttribLocation(cameraProgramRef, "a_texCoord");
+	vsObjectTexCoordHandle = glGetAttribLocation(objectProgramRef, "a_texCoord");
     fsCameraTextureRef = glGetUniformLocation(cameraProgramRef, "s_texture");
+    fsObjectTextureRef = glGetUniformLocation(objectProgramRef, "s_texture");
+	LOGI("cam: %d, obj: %d",vsTexCoordHandle, vsObjectTexCoordHandle);
     vsModelViewRef = glGetUniformLocation(objectProgramRef, "u_modelView");
     vsProjectionViewRef = glGetUniformLocation(objectProgramRef, "u_projectionView");
     vsColorRef = glGetUniformLocation(objectProgramRef, "u_color");
@@ -280,6 +287,8 @@ Renderer::Renderer()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //glGenBuffers (1, &searchPatternBufferRef);
 
 }
 
@@ -371,10 +380,17 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glUniformMatrix4fv(vsProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
 
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
+    	if (i==1){continue;}
     	Model* m = models->at(i);
     	glUniformMatrix4fv(vsModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
 
         glUniform4f(vsColorRef,  0.0f,  1.0f,  1.0f,  1.0f);
+
+        // Set the sampler texture unit to 0
+        glUniform1i(fsObjectTextureRef, 0);
+        checkGlError("fsCameraTextureRef");
+        glBindTexture(GL_TEXTURE_2D, envData->objectTextrueRef);
+        checkGlError("glBindTexture");
 
 
     	//GLfloat *blubi = m->getVNT();
@@ -387,6 +403,9 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 
 			//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
 			glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
+			checkGlError("glVertexAttribPointer");
+
+			glVertexAttribPointer(vsObjectTexCoordHandle, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+6);
 			checkGlError("glVertexAttribPointer");
 
 			glEnableVertexAttribArray(vsPositionRef);
@@ -556,7 +575,57 @@ void Renderer::linkProgram(GLuint programHandler) {
 		glDeleteProgram(programHandler);
 		return;
 	}
+}
 
+GLubyte* Renderer::createSearchPattern(EnvironmentData *envData) {
+	int width = envData->getImageDimension().width;
+	int height =  envData->getImageDimension().height;
+
+
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    checkGlError("glClearColor");
+    glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    checkGlError("glClear");
+
+    //glClear( GL_DEPTH_BUFFER_BIT);
+    glUseProgram(objectProgramRef);
+    glClear( GL_DEPTH_BUFFER_BIT);
+
+    vector<Model*> *models = envData->getModels();
+
+    glm::mat4 PM = envData->getProjectionMatrix() * envData->getViewMatrix();
+    glUniformMatrix4fv(vsProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
+
+    for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
+    	if (i==0){continue;}
+    	Model* m = models->at(i);
+    	glUniformMatrix4fv(vsModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
+
+        glUniform4f(vsColorRef,  0.0f,  1.0f,  1.0f,  1.0f);
+
+
+    	//GLfloat *blubi = m->getVNT();
+    	//LOGI("%f %f %f", blubi[0], blubi[1], blubi[2]);
+
+		glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
+		checkGlError("glVertexAttribPointer");
+
+		//glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, 0, m->getNormals());
+		glVertexAttribPointer(vsNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
+		checkGlError("glVertexAttribPointer");
+
+		glEnableVertexAttribArray(vsPositionRef);
+		checkGlError("glEnableVertexAttribArray");
+		glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		checkGlError("glDrawElemnts");
+    }
+
+
+    GLubyte *buffer = new GLubyte[width * height * 4];
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+	return buffer;
 }
 
 void Renderer::printGLString(const char *name, GLenum s) {
