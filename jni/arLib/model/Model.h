@@ -32,8 +32,10 @@ public:
 	GLushort* getFaces();
 
 	//Materials
+	void setNumberOfMaterials(int nr);
 	GLuint getNumberOfMaterials();
 	Material* getMaterials();
+	void setMaterials(Material *materialArray);
 
 	GLfloat* getCenterOfGravity();
 	GLfloat* getBoundingBox();

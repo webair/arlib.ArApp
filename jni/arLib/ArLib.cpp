@@ -24,9 +24,6 @@ ArLib::ArLib(Renderer* r,
 
 	// create camera texture
 	envData->cameraTextrueRef = r->generateTexture();
-	envData->objectTextrueRef = r->generateTexture();
-
-	LOGI("generate camera/ obj texture: %d / %d", envData->cameraTextrueRef, envData->objectTextrueRef);
 }
 
 void ArLib::createViewport(float availableWidth, float availableHeight)
@@ -115,7 +112,7 @@ void ArLib::processImage(unsigned char *imageData)
 
 
     GLubyte *searchPattern = renderer->createSearchPattern(envData);
-	renderer->loadTexture(envData->objectTextrueRef,searchPattern, imageDimension.width, imageDimension.height);
+	//renderer->loadTexture(envData->objectTextrueRef,searchPattern, imageDimension.width, imageDimension.height);
 
 	//exit(-1);
 	free(searchPattern);
@@ -125,5 +122,23 @@ void ArLib::processImage(unsigned char *imageData)
 }
 
 void ArLib::addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData) {
+	// create Materials
+	Material *mats = new Material[numberOfMaterials];
+	for (int i=0; i < numberOfMaterials; i++) {
+		Material material;
+		int startIndex =  materials[i*2];
+		int length = materials[(i*2)+1] - startIndex;
+		if (length == 0)continue;
+		TextureData texData = textureData[i];
+		GLuint texRef = renderer->generateTexture();
+		renderer->loadTexture(texRef, texData.byteData, texData.width, texData.height);
+		material.textureReference = texRef;
+		material.startIndex = materials[i*2];
+		material.length = materials[(i*2)+1] - material.startIndex;
+		LOGI("loaded material: texRef=%d, startIndex=%d, length=%d", material.textureReference, material.startIndex, material.length);
+		mats[i] = material;
+	}
+	m->setMaterials(mats);
+	m->setNumberOfMaterials(numberOfMaterials);
 	envData->addModel(m);
 }

@@ -96,3 +96,19 @@ glm::mat4 Model::getModelMatrix() {
 Location Model::getLocation() {
 	return this->location;
 }
+void Model::setNumberOfMaterials(int nr)
+{
+	this->numberOfMaterials = nr;
+}
+GLuint Model::getNumberOfMaterials()
+{
+	return this->numberOfMaterials;
+}
+void Model::setMaterials(Material* mats)
+{
+	this->materials = mats;
+}
+Material* Model::getMaterials()
+{
+	return this->materials;
+}

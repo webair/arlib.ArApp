@@ -84,7 +84,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
   (JNIEnv *env, jclass obj, jint modelId,
 		  jfloatArray vntArray, jshortArray facesArray,
 		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
-		  jfloat latitude, jfloat longitude, jobjectArray textureData, jintArray materials) {
+		  jfloat latitude, jfloat longitude, jobjectArray textureArrayArray, jintArray materialArray, jintArray imageDimensionArray) {
 			//test adding models
 			Location modelLocation;
 			modelLocation.latitude = latitude;
@@ -104,12 +104,25 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 			jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
 			jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
 			jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
+			jint* dimensionRaw = env->GetIntArrayElements(imageDimensionArray, 0);
+
+			TextureData* textureDataArray = new TextureData[env->GetArrayLength(textureArrayArray)];
+			jint* materialRaw = env->GetIntArrayElements(materialArray,0);
+
+			for(int i=0;i<env->GetArrayLength(textureArrayArray);i++)
+			{
+				TextureData texD;
+				jbyteArray textureArray = (jbyteArray) env->GetObjectArrayElement(textureArrayArray,i);
+				jbyte* textureRaw = env->GetByteArrayElements(textureArray, 0);
+				texD.byteData = (GLubyte *)textureRaw;
+				texD.length = env->GetArrayLength(textureArray);
+				texD.width= dimensionRaw[i*2];
+				texD.height = dimensionRaw[(i*2)+1];
+				textureDataArray[i] = texD;
+			}
 
 			LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
 			LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
-
-
-
 
 			// bundeshaus lat/lng 46.94645 / 7.44421
 			Model *myModel = new Model(2, (GLfloat *)vntRaw, env->GetArrayLength(vntArray),
@@ -119,12 +132,22 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 
 
 
-		    arLib->addModel(myModel, NULL, 0, NULL);
+		    arLib->addModel(myModel, materialRaw, env->GetArrayLength(textureArrayArray), textureDataArray);
 
 			env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
 			env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
 		    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
 		    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
+
+		    /*
+			for(int i=0;i<env->GetArrayLength(textureArrayArray);i++)
+			{
+				jbyte* rawdata = (jbyte *)textureDataArray[i].byteData;
+				env->ReleaseByteArrayElements(textureByteArray[i], rawdata,0);
+			}
+			*/
+			env->ReleaseIntArrayElements(materialArray, materialRaw, 0);
+
 }
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage

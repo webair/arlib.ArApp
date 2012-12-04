@@ -47,10 +47,6 @@ private:
 	GLuint vsSearchProjectionViewRef;
 	GLuint vsSearchModelViewRef;
 
-	//open Gl ES2 texture refs
-	GLuint glCameraTexRef;
-	GLuint glObjTexRef;
-
 	static void printGLString(const char *name, GLenum s);
 	static void checkGlError(const char* op);
 

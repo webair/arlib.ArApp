@@ -8,6 +8,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.R.dimen;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -167,7 +168,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		for (int j = 0; j < b.face.length; j++) {
 			facesSh[j] = (short) b.face[j];
 		}
-
+		int[] dimension = new int[b.matPics.length*2];
 		byte[][] picArray = new byte[b.matPics.length][];
 		Bitmap bmp;
 		ByteBuffer bb;
@@ -176,7 +177,11 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 					b.matPics[i].length);
 			if (bmp == null) {
 				picArray[i] = new byte[0];
+				dimension[i*2] = 0;
+				dimension[(i*2)+1] = 0;
 			} else {
+				dimension[i*2] = bmp.getWidth();
+				dimension[(i*2)+1] = bmp.getHeight();
 				bb = ByteBuffer.allocate(bmp.getHeight() * bmp.getWidth() * 4);
 				bmp.copyPixelsToBuffer(bb);
 				picArray[i] = bb.array();
@@ -195,7 +200,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		ArLib.initArLib(width, height, frameWidth, frameHeight,
 				cameraAngleVertical);
 		ArLib.addModel(b.objectid, b.vnt, facesSh, b.pointOfGravity, bbox,
-				b.northangle, b.lat, b.lon, picArray, newFaceFromTo);
+				b.northangle, b.lat, b.lon, picArray, newFaceFromTo, dimension);
 
 	}
 

@@ -32,6 +32,8 @@ struct Location {
 struct TextureData {
 	GLubyte* byteData;
 	unsigned int length;
+	unsigned int width;
+	unsigned int height;
 };
 
 struct Material {

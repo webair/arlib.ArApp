@@ -20,7 +20,6 @@ public:
 
 	//gles2 helpers
 	GLuint cameraTextrueRef;
-	GLuint objectTextrueRef;
 
 	void setVerticalAngle(float angle, float near, float far);
 	float getVerticalAngle();

@@ -336,8 +336,8 @@ GLubyte* Renderer::createSearchPattern(EnvironmentData *envData) {
 		glVertexAttribPointer(vsSearchPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
 		checkGlError("glVertexAttribPointer");
 
-		glVertexAttribPointer(vsSearchNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
-		checkGlError("glVertexAttribPointer");
+		//glVertexAttribPointer(vsSearchNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
+		//checkGlError("glVertexAttribPointer");
 
 		glEnableVertexAttribArray(vsSearchPosRef);
 		checkGlError("glEnableVertexAttribArray");
@@ -393,31 +393,43 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glUniformMatrix4fv(vsObjProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
 
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
-    	if (i==1){continue;}
+    	if (i==0){continue;}
     	Model* m = models->at(i);
     	glUniformMatrix4fv(vsObjModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
 
-        // Set the sampler texture unit to 0
-        glUniform1i(fsObjTextureRef, 0);
-        checkGlError("glUniform1i");
-        glBindTexture(GL_TEXTURE_2D, envData->objectTextrueRef);
-        checkGlError("glBindTexture");
+		glVertexAttribPointer(vsObjPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
+		checkGlError("glVertexAttribPointer");
+
+		//glVertexAttribPointer(vsObjNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
+		//checkGlError("glVertexAttribPointer");
+
+		glVertexAttribPointer(vsObjTexRef, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+6);
+		checkGlError("glVertexAttribPointer");
+
+		glEnableVertexAttribArray(vsObjPosRef);
+		checkGlError("glEnableVertexAttribArray");
 
         if (!showNormals) {
-			glVertexAttribPointer(vsObjPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
-			checkGlError("glVertexAttribPointer");
+        	Material *materials = m->getMaterials();
+        	for (int i=0; i < m->getNumberOfMaterials(); i++) {
+        		if (i==4) {
+            		Material mat = materials[i];
+                    // bind le texture
+                    glUniform1i(fsObjTextureRef, 0);
+                    checkGlError("glUniform1i");
+                    glBindTexture(GL_TEXTURE_2D, mat.textureReference);
+                    checkGlError("glBindTexture");
 
-			glVertexAttribPointer(vsObjNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
-			checkGlError("glVertexAttribPointer");
+                	glDrawElements(GL_TRIANGLES, mat.length*3, GL_UNSIGNED_SHORT, m->getFaces() + (mat.startIndex * 3));
+                	checkGlError("glDrawElemnts");
+        		}
 
-			glVertexAttribPointer(vsObjTexRef, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+6);
-			checkGlError("glVertexAttribPointer");
 
-			glEnableVertexAttribArray(vsObjPosRef);
-			checkGlError("glEnableVertexAttribArray");
-			glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
-			//glDrawArrays(GL_TRIANGLES, 0, 3);
-			checkGlError("glDrawElemnts");
+        	}
+
+
+
+
         } else {
         	//draw normals
         	for (int i = 0; i < m->getNumberOfVNT(); i++) {
