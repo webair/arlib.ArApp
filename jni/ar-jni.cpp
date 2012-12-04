@@ -81,10 +81,10 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 		float longitude, float latitude);
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
-  (JNIEnv *env, jclass obj,
+  (JNIEnv *env, jclass obj, jint modelId,
 		  jfloatArray vntArray, jshortArray facesArray,
 		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
-		  jfloat latitude, jfloat longitude) {
+		  jfloat latitude, jfloat longitude, jobjectArray textureData, jobjectArray materialReferences) {
 	//test adding models
 			Location modelLocation;
 			modelLocation.latitude = latitude;

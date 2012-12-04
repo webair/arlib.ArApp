@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
  * Signature: ([F[S[F[FFFF)V
  */
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
-  (JNIEnv *, jclass, jfloatArray, jshortArray, jfloatArray, jfloatArray, jfloat, jfloat, jfloat);
+  (JNIEnv *, jclass, jint, jfloatArray, jshortArray, jfloatArray, jfloatArray, jfloat, jfloat, jfloat, jobjectArray, jobjectArray);
 
 #ifdef __cplusplus
 }
