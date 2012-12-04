@@ -22,7 +22,7 @@ public:
 	GLuint cameraTextrueRef;
 	GLuint objectTextrueRef;
 
-	void setVerticalAngle(float angle);
+	void setVerticalAngle(float angle, float near, float far);
 	float getVerticalAngle();
 
 	void setImageDimension(Dimension size);

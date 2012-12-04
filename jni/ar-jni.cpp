@@ -60,9 +60,7 @@ GLfloat a_vertices[] = {
 extern "C" {
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
-  (JNIEnv *env, jclass obj, jint screenWidth, jint screenHeight, jint imageWidth, jint imageHeight, jfloat cameraAngle, jfloatArray vntArray, jshortArray facesArray,
-		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
-		  jfloat latitude, jfloat longitude)
+  (JNIEnv *env, jclass obj, jint screenWidth, jint screenHeight, jint imageWidth, jint imageHeight, jfloat cameraAngle)
 	{
 		LOGI("initializing ArLib");
 		//test ArLib
@@ -75,53 +73,6 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
 				(int) imageHeight,
 				(float) cameraAngle
 		);
-
-		imageDataSize = imageWidth * imageHeight * 4;
-
-		rImageWidth = (int)imageWidth;
-		rImageHeight = (int)imageHeight;
-
-		//test adding models
-
-
-		Location modelLocation;
-		modelLocation.latitude = latitude;
-		modelLocation.longitude = longitude;
-
-	    //east
-
-		float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
-		float boundingBox[36];
-		Model *cube = new Model(a_vertices, 9*4*6,
-				 a_indices, 6*6,
-				 centerOfGravity, boundingBox,
-				  0.0f, modelLocation);
-	    arLib->addModel(cube);
-
-
-		jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
-		jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
-		jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
-		jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
-
-		LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
-		LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
-
-
-
-		// bundeshaus lat/lng 46.94645 / 7.44421
-		Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
-				(GLushort *)facesRaw, env->GetArrayLength(facesArray),
-				(GLfloat *)cogRaw, (GLfloat *)bbRaw,
-				(float) northAngle, modelLocation);
-
-	    arLib->addModel(myModel);
-
-		env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
-		env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
-	    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
-	    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
-
 	}
 
 /*
@@ -134,31 +85,43 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 		  jfloatArray vntArray, jshortArray facesArray,
 		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
 		  jfloat latitude, jfloat longitude) {
-	/*
-	jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
-	jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
-	jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
-	jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
+	//test adding models
+			Location modelLocation;
+			modelLocation.latitude = latitude;
+			modelLocation.longitude = longitude;
 
-	LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
-	LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
+		    //cube model
+			float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
+			float boundingBox[36];
+			Model *cube = new Model(a_vertices, 9*4*6,
+					 a_indices, 6*6,
+					 centerOfGravity, boundingBox,
+					  0.0f, modelLocation);
+		    arLib->addModel(cube);
 
-	Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
-			(GLushort *)facesRaw, env->GetArrayLength(facesArray),
-			(GLfloat *)cogRaw, (GLfloat *)bbRaw,
-			(float) northAngle);
 
-    mat4 View = glm::translate(mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
+			jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
+			jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
+			jfloat* cogRaw  = env->GetFloatArrayElements(cogArray, 0);
+			jfloat* bbRaw  = env->GetFloatArrayElements(bbArray, 0);
 
-    myModel->setWorldMatrix(View);
+			LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
+			LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
 
-    arLib->addModel(myModel);
-	env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
-	env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
-    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
-    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
 
-    */
+
+			// bundeshaus lat/lng 46.94645 / 7.44421
+			Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
+					(GLushort *)facesRaw, env->GetArrayLength(facesArray),
+					(GLfloat *)cogRaw, (GLfloat *)bbRaw,
+					(float) northAngle, modelLocation);
+
+		    arLib->addModel(myModel);
+
+			env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
+			env->ReleaseShortArrayElements(facesArray, facesRaw, 0);
+		    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
+		    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
 }
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
@@ -168,14 +131,9 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
 		Orientation orientation;
 		orientation.azimuth = (float) azimuth;
-		//orientation.roll = 0.0f;
 		orientation.roll = (float) roll;
 		orientation.pitch = (float) pitch;
-		/*
-		orientation.azimuth = 0.0f;
-		orientation.roll = 0.0f;
-		orientation.pitch = 0.0f;
-		*/
+
 		//LOGI("azimuth: %f, pitch: %f, roll: %f", orientation.azimuth, orientation.pitch, orientation.roll);
 
 		float *rotationMatrixRaw = env->GetFloatArrayElements(rotationMatrixArray, 0);
@@ -189,7 +147,6 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 
 		arLib->setDeviceLocation(location);
 		arLib->processImage((unsigned char *)yuvRaw);
-
 
 		env->ReleaseByteArrayElements(yuvImageArray, yuvRaw, 0);
 	    env->ReleaseFloatArrayElements(rotationMatrixArray, rotationMatrixRaw, 0);

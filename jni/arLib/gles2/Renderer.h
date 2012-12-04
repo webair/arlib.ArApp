@@ -23,25 +23,33 @@ public:
 	//render without displaying
 	GLubyte* createSearchPattern(EnvironmentData *envData);
 private:
-	// openGL ref values
+	// program refs
 	GLuint cameraProgramRef;
 	GLuint objectProgramRef;
-	GLuint vsModelViewRef;
-	GLuint vsProjectionViewRef;
-	GLuint vsColorRef;
-	GLuint vsPositionRef;
-	GLuint vsCameraPositionRef;
-	GLuint vsNormalRef;
+	GLuint searchPatternProgramRef;
 
-	GLuint searchPatternBufferRef;
+	//camera shader references
+	GLuint vsCamPosRef;
+	GLuint vsCamTexRef;
+	GLuint fsCamTextureRef;
 
-	GLuint vsTexCoordHandle;
-	GLuint vsObjectTexCoordHandle;
+	//object shader references
+	GLuint vsObjPosRef;
+	GLuint vsObjNormalRef;
+	GLuint vsObjTexRef;
+	GLuint vsObjProjectionViewRef;
+	GLuint vsObjModelViewRef;
+	GLuint fsObjTextureRef;
 
+	//search pattern references
+	GLuint vsSearchPosRef;
+	GLuint vsSearchNormalRef;
+	GLuint vsSearchProjectionViewRef;
+	GLuint vsSearchModelViewRef;
 
-	// camera specific
-	GLuint fsCameraTextureRef;
-	GLuint fsObjectTextureRef;
+	//open Gl ES2 texture refs
+	GLuint glCameraTexRef;
+	GLuint glObjTexRef;
 
 	static void printGLString(const char *name, GLenum s);
 	static void checkGlError(const char* op);

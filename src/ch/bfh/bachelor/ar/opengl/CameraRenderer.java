@@ -166,9 +166,10 @@ android.hardware.Camera.PreviewCallback, SensorEventListener {
 			   facesSh[j] = (short) b.face[j];
 		   }
 					   
-//		  ArLib.addModel();
-		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical, b.vnt, facesSh, b.pointOfGravity, bbox, b.northangle, b.lat, b.lon);
-		//Übergeben der Objekte..
+		ArLib.initArLib(width, height, frameWidth, frameHeight, cameraAngleVertical);
+		ArLib.addModel(b.vnt, facesSh, b.pointOfGravity, bbox, b.northangle, b.lat, b.lon);
+
+		
 
 	}
 

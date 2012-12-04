@@ -1,9 +1,9 @@
 #include "ArLib.h"
 #include "util/Logger.h"
 #include "arLib/util/GeoMath.h"
+#include "arLib/Constants.h"
 
 using namespace glm;
-
 
 ArLib::ArLib(Renderer* r,
 		int viewportWidth,
@@ -18,7 +18,7 @@ ArLib::ArLib(Renderer* r,
 	dimension.width = (float) imageWidth;
 	dimension.height = (float) imageHeight;
 	envData->setImageDimension(dimension);
-	envData->setVerticalAngle(verticalAngle);
+	envData->setVerticalAngle(verticalAngle, FRUSTUM_NEAR, FRUSTUM_FAR);
 
 	createViewport((float) viewportWidth, (float) viewportHeight);
 
@@ -81,6 +81,7 @@ void ArLib::processImage(unsigned char *imageData)
 	unsigned char* rgbaRaw = (unsigned char *)malloc(envData->getImageRGBASize() * sizeof(unsigned char));
 	Mat rgba(imageHeight, imageWidth, CV_8UC4, rgbaRaw);
 	cvtColor(yuv, rgba, CV_YUV420sp2RGBA);
+
 	// display camera image
 	renderer->loadTexture(envData->cameraTextrueRef,rgbaRaw, imageDimension.width, imageDimension.height);
 

@@ -22,8 +22,6 @@ Model::Model(GLfloat* vnt, int numberOfVNT,
 			this->vnt[i+1] = vnt[i+1];
 			this->vnt[i+2] = vnt[i+2];
 
-			//make sure that the normals are normalized
-			//vec3 normal = normalize(vec3(vnt[i+3], vnt[i+4], vnt[i+5]));
 			this->vnt[i+3] = vnt[i+3];
 			this->vnt[i+4] = vnt[i+4];
 			this->vnt[i+5] = vnt[i+5];
@@ -95,7 +93,6 @@ void Model::setWorldMatrix(mat4 matrix) {
 
 glm::mat4 Model::getModelMatrix() {
 	return (*this->modelMatrix) * (*this->objectMatrix);
-	//return (*this->objectMatrix);
 }
 
 Location Model::getLocation() {
