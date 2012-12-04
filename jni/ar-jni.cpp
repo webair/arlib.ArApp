@@ -84,8 +84,8 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
   (JNIEnv *env, jclass obj, jint modelId,
 		  jfloatArray vntArray, jshortArray facesArray,
 		  jfloatArray cogArray , jfloatArray bbArray, jfloat northAngle,
-		  jfloat latitude, jfloat longitude, jobjectArray textureData, jobjectArray materialReferences) {
-	//test adding models
+		  jfloat latitude, jfloat longitude, jobjectArray textureData, jintArray materials) {
+			//test adding models
 			Location modelLocation;
 			modelLocation.latitude = latitude;
 			modelLocation.longitude = longitude;
@@ -93,11 +93,11 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 		    //cube model
 			float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
 			float boundingBox[36];
-			Model *cube = new Model(a_vertices, 9*4*6,
+			Model *cube = new Model(1,a_vertices, 9*4*6,
 					 a_indices, 6*6,
 					 centerOfGravity, boundingBox,
 					  0.0f, modelLocation);
-		    arLib->addModel(cube);
+		    arLib->addModel(cube, NULL, 0, NULL);
 
 
 			jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
@@ -110,13 +110,16 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 
 
 
+
 			// bundeshaus lat/lng 46.94645 / 7.44421
-			Model *myModel = new Model((GLfloat *)vntRaw, env->GetArrayLength(vntArray),
+			Model *myModel = new Model(2, (GLfloat *)vntRaw, env->GetArrayLength(vntArray),
 					(GLushort *)facesRaw, env->GetArrayLength(facesArray),
 					(GLfloat *)cogRaw, (GLfloat *)bbRaw,
 					(float) northAngle, modelLocation);
 
-		    arLib->addModel(myModel);
+
+
+		    arLib->addModel(myModel, NULL, 0, NULL);
 
 			env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
 			env->ReleaseShortArrayElements(facesArray, facesRaw, 0);

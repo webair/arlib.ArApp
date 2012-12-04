@@ -14,11 +14,14 @@ using namespace glm;
 class Model {
 
 public:
-	Model(GLfloat* vnt, int numberOfVNT,
+	Model(int modelId, GLfloat* vnt, int numberOfVNT,
 		  GLushort* faces, int numberOfFaces,
 		  GLfloat* centerOfGravity, GLfloat* boundingBox,
-		  GLfloat northAngle, Location location);
+		  GLfloat northAngle, Location location
+	);
 	~Model();
+
+	int getModelId();
 
 	// raw data vertices, normals & textures
 	GLuint getNumberOfVNT();
@@ -28,8 +31,11 @@ public:
 	GLuint getNumberOfFaces();
 	GLushort* getFaces();
 
-	GLfloat* getCenterOfGravity();
+	//Materials
+	GLuint getNumberOfMaterials();
+	Material* getMaterials();
 
+	GLfloat* getCenterOfGravity();
 	GLfloat* getBoundingBox();
 
 	//defines the translation relative to 0,0,0 coordinate
@@ -42,11 +48,17 @@ public:
 
 
 protected:
+	int modelId;
+
+
 	GLuint numberOfVNT;
 	GLfloat* vnt;
 
 	GLuint numberOfFaces;
 	GLushort *faces;
+
+	GLuint numberOfMaterials;
+	Material *materials;
 
 	GLfloat centerOfGravity[3];
 	GLfloat boundingBox[24];

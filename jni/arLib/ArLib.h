@@ -46,7 +46,7 @@ public:
 	EnvironmentData* envData;
 
 	//adding models
-	void addModel(Model* m);
+	void addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData);
 private:
 	// open gl stuff
 	Renderer *renderer;

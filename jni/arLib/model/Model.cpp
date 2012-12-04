@@ -5,10 +5,11 @@
 
 using namespace std;
 
-Model::Model(GLfloat* vnt, int numberOfVNT,
+Model::Model(int modelId, GLfloat* vnt, int numberOfVNT,
 		  GLushort* faces,int numberOfFaces,
 		  GLfloat* centerOfGravity, GLfloat* boundingBox,
-		  GLfloat northAngle, Location location)
+		  GLfloat northAngle, Location location
+		  )
 {
 	this->location = location;
 	LOGI("lat, lon: %f, %f", this->getLocation().latitude, this->getLocation().longitude);
@@ -60,9 +61,6 @@ Model::Model(GLfloat* vnt, int numberOfVNT,
 			-this->centerOfGravity[2]));
 	mat4 totRot = rotateY * rotateX;
 	objectMatrix = totRot * objectMatrix;
-
-	//this->objectMatrix = new mat4(objectMatrix);
-
 	this->objectMatrix = new mat4(objectMatrix);
 }
 

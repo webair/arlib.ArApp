@@ -13,6 +13,6 @@ public class ArLib {
 
 	public static native void addModel(int modelId, float[] vnt, short[] faces, 
 		float[] pointOfGravity, float[] boundingBox, float northAngle, 
-		float latitude, float longitude, byte[][] textureData, int[][] materials
+		float latitude, float longitude, byte[][] textureData, int[] materials
 	);
 }

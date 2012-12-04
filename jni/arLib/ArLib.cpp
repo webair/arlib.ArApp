@@ -124,6 +124,6 @@ void ArLib::processImage(unsigned char *imageData)
 	free(rgbaRaw);
 }
 
-void ArLib::addModel(Model *m) {
+void ArLib::addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData) {
 	envData->addModel(m);
 }

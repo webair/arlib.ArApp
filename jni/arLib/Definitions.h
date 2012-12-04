@@ -1,6 +1,8 @@
 #ifndef AR_DEFINITIONS
 #define AR_DEFINITIONS
 
+#include <GLES2/gl2.h>
+
 struct Point {
 	float x;
 	float y;
@@ -25,6 +27,16 @@ struct Rect {
 struct Location {
 	float longitude;
 	float latitude;
+};
 
+struct TextureData {
+	GLubyte* byteData;
+	unsigned int length;
+};
+
+struct Material {
+	int startIndex;
+	int length;
+	GLuint textureReference;
 };
 #endif
