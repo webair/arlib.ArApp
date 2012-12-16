@@ -7,6 +7,10 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,15 +20,21 @@ import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.opengl.CameraRenderer;
 import ch.bfh.bachelor.ar.opengl.OpenGLSurfaceView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity{
     private static final String TAG = "MainActivity";
 	private CameraRenderer cr;
 	private  ArrayList<Object3D> l;
 	private static final boolean loadModules=true;
+	private boolean gpsTesting;
+	private LocManager lm;
+
 	
     private BaseLoaderCallback  mOpenCVCallBack = new BaseLoaderCallback(this) {
     	@Override
     	public void onManagerConnected(int status) {
+    		gpsTesting =true;
+    		lm = new LocManager(MainActivity.this, gpsTesting);
+    		
     		switch (status) {
 				case LoaderCallbackInterface.SUCCESS:
 				{
@@ -34,7 +44,7 @@ public class MainActivity extends Activity {
 					if(loadModules)
 					{
 					       l = null;
-					       Communicator c = new Communicator("83.169.4.84", 3131);
+					       Communicator c = new Communicator("83.169.4.84", 3131, lm);
 					       Thread a = new Thread(c);
 					       a.start();
 					       try {
@@ -46,7 +56,7 @@ public class MainActivity extends Activity {
 							}
 					       if(l!=null)
 					       {
-					    	   cr = new CameraRenderer(MainActivity.this, l);
+					    	   cr = new CameraRenderer(MainActivity.this, l,lm);
 					       }
 					}
 					//instantiate open gl renderer
@@ -126,8 +136,15 @@ public class MainActivity extends Activity {
     			item.setTitle(R.string.menu_gyroCorrection_on);
     		item.setChecked(cr.isGyroCorrectionEnable);
     	}
+    	if(item.getItemId() == R.id.menu_gpsTesting){
+    		this.gpsTesting = !this.gpsTesting;
+    		this.lm.setTesting(this.gpsTesting);
+    		if (this.gpsTesting)
+    			item.setTitle(R.string.menu_gpsTesting_off);
+    		else
+    			item.setTitle(R.string.menu_gpsTesting_on);
+    		item.setChecked(lm.isTesting());
+    	}
     	return false;
     }
-	
-		
 }

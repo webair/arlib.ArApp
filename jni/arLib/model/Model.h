@@ -52,7 +52,6 @@ public:
 protected:
 	int modelId;
 
-
 	GLuint numberOfVNT;
 	GLfloat* vnt;
 
@@ -70,6 +69,10 @@ protected:
 	mat4* objectMatrix;
 
 	Location location;
+
+
+	//RotateMatrix
+	float rotation;
 };
 
 #endif

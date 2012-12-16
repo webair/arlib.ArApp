@@ -2,13 +2,18 @@
 
     <string name="app_name">ARApp</string>
     <string name="menu_sensorCorrection_on">turn sensor correction on</string>
-        <string name="menu_sensorCorrection_off">turn sensor correction off</string>
+    <string name="menu_sensorCorrection_off">turn sensor correction off</string>
         
     <string name="menu_sensorBuffer_on">turn sensor buffer on</string>
-        <string name="menu_sensorBuffer_off">turn sensor buffer off</string>
+    <string name="menu_sensorBuffer_off">turn sensor buffer off</string>
         
     <string name="menu_gyroCorrection_on">turn gyro correction on</string>
-        <string name="menu_gyroCorrection_off">turn gyro correction off</string>        
+    <string name="menu_gyroCorrection_off">turn gyro correction off</string>        
     <string name="title_activity_main">MainActivity</string>
+
+    <string name="menu_gpsTesting_on">turn gps testing on</string>
+    <string name="menu_gpsTesting_off">turn gps testing off</string>        
+    <string name="title_activity_main">MainActivity</string>
+
 
 </resources>

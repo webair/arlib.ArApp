@@ -95,8 +95,8 @@ void ArLib::processImage(unsigned char *imageData)
 	vector<Model*> *models = envData->getModels();
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
     	Model* m = models->at(i);
-    	float d = GeoMath::getDistance(vorDemBundeshaus,m->getLocation());
-    	float a = GeoMath::getAngle(vorDemBundeshaus, m->getLocation());
+    	float d = GeoMath::getDistance(envData->getDeviceLocation(),m->getLocation());
+    	float a = GeoMath::getAngle(envData->getDeviceLocation(), m->getLocation());
 
     	//LOGI("distance: %f, angle: %f",d,a);
 
@@ -123,18 +123,21 @@ void ArLib::processImage(unsigned char *imageData)
 
 void ArLib::addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData) {
 	// create Materials
+	LOGI("%d", numberOfMaterials);
+	//numberOfMaterials = (int)4;
 	Material *mats = new Material[numberOfMaterials];
 	for (int i=0; i < numberOfMaterials; i++) {
 		Material material;
 		int startIndex =  materials[i*2];
 		int length = materials[(i*2)+1] - startIndex;
-		if (length == 0)continue;
+		LOGI("Mat Nr, start, end, length: %d, %d, %d, %d", i, startIndex, materials[(i*2)+1], length);
 		TextureData texData = textureData[i];
 		GLuint texRef = renderer->generateTexture();
+
 		renderer->loadTexture(texRef, texData.byteData, texData.width, texData.height);
 		material.textureReference = texRef;
-		material.startIndex = materials[i*2];
-		material.length = materials[(i*2)+1] - material.startIndex;
+		material.startIndex = startIndex;
+		material.length = length;
 		LOGI("loaded material: texRef=%d, startIndex=%d, length=%d", material.textureReference, material.startIndex, material.length);
 		mats[i] = material;
 	}

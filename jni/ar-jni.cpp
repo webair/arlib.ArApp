@@ -114,10 +114,34 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 				TextureData texD;
 				jbyteArray textureArray = (jbyteArray) env->GetObjectArrayElement(textureArrayArray,i);
 				jbyte* textureRaw = env->GetByteArrayElements(textureArray, 0);
-				texD.byteData = (GLubyte *)textureRaw;
+
 				texD.length = env->GetArrayLength(textureArray);
-				texD.width= dimensionRaw[i*2];
-				texD.height = dimensionRaw[(i*2)+1];
+				if (texD.length==0) {
+					texD.length = 4;
+					texD.byteData = new GLubyte[4];
+					texD.byteData[0],texD.byteData[3] = 255;
+					texD.byteData[1], texD.byteData[2] = 0;
+					texD.width = 1;
+					texD.height = 1;
+				} else {
+					//copy image
+					GLubyte *imgData = new GLubyte[texD.length];
+					for (unsigned int j=0; j < texD.length; j++) {
+						if (j % 4 == 0) {
+							unsigned int targetPos = texD.length-j-4;
+							imgData[targetPos] = textureRaw[j];
+							imgData[targetPos+1] = textureRaw[j+1];
+							imgData[targetPos+2] = textureRaw[j+2];
+							imgData[targetPos+3] = textureRaw[j+3];
+
+						}
+
+					}
+					texD.byteData = imgData;
+					texD.width= dimensionRaw[i*2];
+					texD.height = dimensionRaw[(i*2)+1];
+					env->ReleaseByteArrayElements(textureArray, textureRaw,0);
+				}
 				textureDataArray[i] = texD;
 			}
 
@@ -131,7 +155,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 					(float) northAngle, modelLocation);
 
 
-
+			//env->GetArrayLength(textureArrayArray)
 		    arLib->addModel(myModel, materialRaw, env->GetArrayLength(textureArrayArray), textureDataArray);
 
 			env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
@@ -152,7 +176,7 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
   (JNIEnv *env, jclass obj, jbyteArray yuvImageArray, jfloat azimuth,
-		  jfloat pitch, jfloat roll, jfloatArray rotationMatrixArray)
+		  jfloat pitch, jfloat roll, jfloatArray rotationMatrixArray, jfloat latitude,jfloat longitude)
 	{
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
 		Orientation orientation;
@@ -168,8 +192,10 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 
 		//ca. Rathausgasse 57
 	    Location location;
-	    location.latitude = 46.948592;
-	    location.longitude = 7.449328;
+	    location.latitude = (float) latitude;
+	    location.longitude = (float) longitude;
+	    //location.latitude = 46.948592;
+	    //location.longitude = 7.449328;
 
 		arLib->setDeviceLocation(location);
 		arLib->processImage((unsigned char *)yuvRaw);

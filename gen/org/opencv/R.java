@@ -17,6 +17,7 @@ public final class R {
         public static final int test_960x720=0x7f020003;
     }
     public static final class id {
+        public static final int menu_gpsTesting=0x7f070003;
         public static final int menu_gyroCorrection=0x7f070002;
         public static final int menu_sensorBuffer=0x7f070001;
         public static final int menu_sensorCorrection=0x7f070000;
@@ -29,6 +30,8 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f040000;
+        public static final int menu_gpsTesting_off=0x7f040009;
+        public static final int menu_gpsTesting_on=0x7f040008;
         public static final int menu_gyroCorrection_off=0x7f040006;
         public static final int menu_gyroCorrection_on=0x7f040005;
         public static final int menu_sensorBuffer_off=0x7f040004;

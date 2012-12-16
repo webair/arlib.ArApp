@@ -13,6 +13,7 @@ Model::Model(int modelId, GLfloat* vnt, int numberOfVNT,
 {
 	this->location = location;
 	LOGI("lat, lon: %f, %f", this->getLocation().latitude, this->getLocation().longitude);
+	LOGI("numberVNT, numberFaces: %d, %d", numberOfVNT, numberOfFaces);
 	this->vnt = (GLfloat *) new GLfloat[numberOfVNT];
 
 	this->numberOfVNT = numberOfVNT;
@@ -54,13 +55,18 @@ Model::Model(int modelId, GLfloat* vnt, int numberOfVNT,
 	LOGI("cog: %f, %f, %f", this->centerOfGravity[0], this->centerOfGravity[1], this->centerOfGravity[2]);
 
 
-	mat4 rotateX = rotate(mat4(), -90.0f, vec3(1.0f, 0.0f, 0.0f));
-	mat4 rotateY = rotate(mat4(), northAngle, vec3(0.0f, 1.0f, 0.0f));
+	//mat4 rotateX = rotate(mat4(), -180.0f, vec3(0.0f, 1.0f, 0.0f));
+	//mat4 rotateY = rotate(mat4(), 180.0f, vec3(0.0f, 1.0f, 0.0f));
 	mat4 objectMatrix = translate(mat4(), vec3(-this->centerOfGravity[0],
 			-this->centerOfGravity[1],
 			-this->centerOfGravity[2]));
-	mat4 totRot = rotateY * rotateX;
-	objectMatrix = totRot * objectMatrix;
+
+	//CoG Offset
+	objectMatrix = translate(objectMatrix, vec3(0.0f, (this->centerOfGravity[1]/2.0f),0.0f));
+
+
+	//mat4 totRot = rotateY; //* rotateX;
+	//objectMatrix = totRot * objectMatrix;
 	this->objectMatrix = new mat4(objectMatrix);
 }
 
@@ -90,6 +96,10 @@ void Model::setWorldMatrix(mat4 matrix) {
 }
 
 glm::mat4 Model::getModelMatrix() {
+	//Rotate Objects
+	//this->rotation = this->rotation+2.0f;
+	//mat4 rotatedMat = rotate(mat4(), 180.0f, vec3(0.0f, 1.0f, 0.0f));
+	//return rotatedMat * (*this->objectMatrix);
 	return (*this->modelMatrix) * (*this->objectMatrix);
 }
 

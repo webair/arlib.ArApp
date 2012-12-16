@@ -24,9 +24,11 @@ public class Communicator implements Runnable
 	String ip;
 	int port;
 	private Socket socket;
+	private LocManager lm;
 	
-	public Communicator (String ip, int port)
+	public Communicator (String ip, int port, LocManager lm)
 	{
+		this.lm = lm;
 		this.ip=ip;
 		this.port=port;
 	}
@@ -86,7 +88,7 @@ public class Communicator implements Runnable
 	}
 	public void run() {
 		
-		GetObjects go = new GetObjects(0l, 0l, 10);
+		GetObjects go = new GetObjects(lm.getCurrentLon(), lm.getCurrentLat(), 10);
 		try {
 			
 			socket = new Socket(ip, port);

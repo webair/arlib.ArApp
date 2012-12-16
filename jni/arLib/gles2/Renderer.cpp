@@ -395,6 +395,7 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
     	if (i==0){continue;}
     	Model* m = models->at(i);
+
     	glUniformMatrix4fv(vsObjModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
 
 		glVertexAttribPointer(vsObjPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
@@ -410,21 +411,19 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 		checkGlError("glEnableVertexAttribArray");
 
         if (!showNormals) {
+
         	Material *materials = m->getMaterials();
         	for (int i=0; i < m->getNumberOfMaterials(); i++) {
-        		if (i==4) {
+        	//if (i==5) {
             		Material mat = materials[i];
                     // bind le texture
                     glUniform1i(fsObjTextureRef, 0);
                     checkGlError("glUniform1i");
                     glBindTexture(GL_TEXTURE_2D, mat.textureReference);
                     checkGlError("glBindTexture");
-
-                	glDrawElements(GL_TRIANGLES, mat.length*3, GL_UNSIGNED_SHORT, m->getFaces() + (mat.startIndex * 3));
+                	glDrawElements(GL_TRIANGLES, mat.length*3, GL_UNSIGNED_SHORT,m->getFaces() + mat.startIndex*3);
                 	checkGlError("glDrawElemnts");
-        		}
-
-
+        		//}
         	}
 
 

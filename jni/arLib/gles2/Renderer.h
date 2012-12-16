@@ -57,5 +57,6 @@ private:
 
 	//fps counter
 	double lastTime;
+
 };
 #endif

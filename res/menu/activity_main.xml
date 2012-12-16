@@ -14,5 +14,10 @@
 	        android:title="@string/menu_gyroCorrection_off"
 	        android:orderInCategory="100"
 	        android:showAsAction="never" android:checked="true" android:checkable="true" android:enabled="true"/>
+		        
+	<item android:id="@+id/menu_gpsTesting"
+	        android:title="@string/menu_gpsTesting_off"
+	        android:orderInCategory="100"
+	        android:showAsAction="never" android:checked="true" android:checkable="true" android:enabled="true"/>
 
 </menu>

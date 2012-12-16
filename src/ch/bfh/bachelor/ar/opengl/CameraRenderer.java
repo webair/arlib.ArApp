@@ -3,6 +3,7 @@ package ch.bfh.bachelor.ar.opengl;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -19,10 +20,15 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.opengl.GLSurfaceView;
+import android.os.Bundle;
 import android.util.Log;
 import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.ArLib;
+import ch.bfh.bachelor.ar.LocManager;
 
 public class CameraRenderer implements GLSurfaceView.Renderer,
 		android.hardware.Camera.PreviewCallback, SensorEventListener {
@@ -84,8 +90,13 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	private Camera cam;
 
 	private ArrayList<Object3D> models;
+	
+	private LocManager lm;
 
-	public CameraRenderer(Context context, ArrayList<Object3D> models) {
+	
+
+	public CameraRenderer(Context context, ArrayList<Object3D> models, LocManager lm) {
+		this.lm = lm;
 		this.models = models;
 		// Change Sensor Delay Here
 		sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
@@ -100,9 +111,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			rA = new float[bufferSize];
 		}
 		if (isGyroCorrectionEnable) {
-			this.gyroThresholdA = (float) 0.01;
-			this.gyroThresholdB = (float) 0.01;
-			this.gyroThresholdC = (float) 0.01;
+			this.gyroThresholdA = (float) 0.0005;
+			this.gyroThresholdB = (float) 0.0005;
+			this.gyroThresholdC = (float) 0.0005;
 			this.isMoving = false;
 			bufferSizeg = 5;
 			bufferMiddleg = (bufferSize - 1) / 2;
@@ -127,14 +138,14 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			// String.format("azimuth: %f, pitch: %f, roll: %f",azimuth, pitch,
 			// roll));
 
-			Log.i(TAG, String.format("sdk row1: %f, %f, %f", outR[0], outR[1],
+			/*Log.i(TAG, String.format("sdk row1: %f, %f, %f", outR[0], outR[1],
 					outR[2]));
 			Log.i(TAG, String.format("sdk row2: %f, %f, %f", outR[4], outR[5],
 					outR[6]));
 			Log.i(TAG, String.format("sdk row3: %f, %f, %f", outR[8], outR[9],
-					outR[10]));
+					outR[10]));*/
 
-			ArLib.precessImage(frame, azimuth, pitch, roll, RE.clone());
+			ArLib.precessImage(frame, azimuth, pitch, roll, RE.clone(), lm.getCurrentLat(), lm.getCurrentLon());
 			// ArLib.precessImage(frame, azimuth, pitch, roll);
 
 			this.notify();
@@ -186,24 +197,41 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 				bmp.copyPixelsToBuffer(bb);
 				picArray[i] = bb.array();
 			}
-			Log.i(TAG, String.format("Picture Byte Array Length: %d",
-					picArray[i].length));
+			
+
+			Log.i(TAG, String.format("Picture Byte Array Length: %d, %s",
+					picArray[i].length, b.matNames[i]));
 		}
 
 		int[] newFaceFromTo = new int[b.matToFace.length * 2];
+		
 		for (int i = 0; i < b.matToFace.length; i++) {
-			int tmp = i * 2;
-			newFaceFromTo[tmp] = b.matToFace[i][0];
-			newFaceFromTo[tmp + 1] = b.matToFace[i][1];
+			newFaceFromTo[i*2] = b.matToFace[i][0];
+			newFaceFromTo[(i*2)+1] = b.matToFace[i][1];
+			Log.i(TAG, String.format("Picture Index Start: %d", newFaceFromTo[i*2]));
+			Log.i(TAG, String.format("Picture Index Stop: %d", newFaceFromTo[(i*2)+1]));
 		}
-
 		ArLib.initArLib(width, height, frameWidth, frameHeight,
 				cameraAngleVertical);
 		ArLib.addModel(b.objectid, b.vnt, facesSh, b.pointOfGravity, bbox,
 				b.northangle, b.lat, b.lon, picArray, newFaceFromTo, dimension);
 
 	}
+	public static void reverse(int[][] data) {
+	    int left = 0;
+	    int right = data.length - 1;
 
+	    while( left < right ) {
+	        // swap the values at the left and right indices
+	        int[] temp = data[left];
+	        data[left] = data[right];
+	        data[right] = temp;
+
+	        // move the left and right index pointers in toward the center
+	        left++;
+	        right--;
+	    }
+	}
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		// stub method
