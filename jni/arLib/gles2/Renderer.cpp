@@ -1,6 +1,5 @@
 #include "Renderer.h"
-
-#include "time.h"
+#include "Shaders.h"
 #include "util/Logger.h"
 
 #include <GLES2/gl2.h>
@@ -11,89 +10,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#include "modelData/bundehaus.h"
-
 /*
- * Constructor & Destructor
+ * static arrays to hold the vertices and texure vertices
+ * for rendering the camera image
+ *
  */
-
-static const char cameraVerticeShader[] =
-		"attribute vec4 a_position;"
-		"attribute vec2 a_texCoord;"
-		"varying vec2 v_camTexCoord;"
-		"void main()"
-		"{"
-			"gl_Position = a_position;"
-			"v_camTexCoord = a_texCoord;"
-		"}";
-
-static const char cameraFragmentShader[] =
-		"precision mediump float;"
-		"uniform sampler2D u_textureSampler;"
-		"varying vec2 v_camTexCoord;"
-		"void main()\n"
-		"{"
-			"gl_FragColor = texture2D( u_textureSampler, v_camTexCoord );"
-		"}"
-;
-
-static const char searchPatternVerticeShader[] =
-
-		"attribute vec4 a_position;"
-		"attribute vec4 a_normal;"
-
-		"uniform mat4 u_projectionView;"
-		"uniform mat4 u_modelView;"
-
-		"void main()"
-		"{"
-			//not used yet, but has to be declared
-			"vec4 newNormal = u_projectionView * u_modelView * a_normal;"
-			"gl_Position = u_projectionView * u_modelView * a_position;"
-		"}"
-;
-
-static const char searchPatternFragmentShader[] =
-
-		"precision mediump float;"
-		"varying float depth;"
-		"void main()\n"
-		"{"
-			"gl_FragColor = vec4(1.0,1.0,1.0,1.0);"
-		"}"
-;
-
-static const char objectVerticeShader[] =
-
-		"attribute vec4 a_position;"
-		"attribute vec4 a_normal;"
-		"attribute vec2 a_texCoord;"
-
-		"uniform mat4 u_projectionView;"
-		"uniform mat4 u_modelView;"
-
-		"varying vec2 v_objTexCoord;"
-
-		"void main()"
-		"{"
-			//not used yet, but has to be declared
-			"vec4 newNormal = u_projectionView * u_modelView * a_normal;"
-			"v_objTexCoord = a_texCoord;"
-			"gl_Position = u_projectionView * u_modelView * a_position;"
-		"}"
-;
-
-static const char objectFragmentShader[] =
-
-		"precision mediump float;"
-		"uniform sampler2D u_textureSampler;"
-		"varying vec2 v_objTexCoord;"
-		"void main()\n"
-		"{"
-			"gl_FragColor = texture2D( u_textureSampler, v_objTexCoord );"
-		"}"
-;
-
 GLfloat const gCameraQuad[] = {
 		-1.0f, 1.0f, 0.0f,
 		-1.0f, -1.0f, 0.0f,
@@ -112,11 +33,8 @@ GLfloat const gCameraTexCoord[] = {
 		0.0f, 0.0f
 };
 
-
-
 Renderer::Renderer()
 {
-	// 10 should be enough for the moment...
 	printGLString("Version", GL_VERSION);
 	printGLString("Vendor", GL_VENDOR);
 	printGLString("Renderer", GL_RENDERER);
@@ -131,7 +49,10 @@ Renderer::Renderer()
 	GLuint searchPatternVerticeShaderRef;
 	GLuint searchPatternFragmentShaderRef;
 
-	// Load the vertex/fragment shaders
+	/*
+	 * Load the three shaders for rendering the camera image, models and the
+	 * search pattern
+	 */
 	cameraVerticeShaderRef = loadShader(GL_VERTEX_SHADER, cameraVerticeShader);
 	cameraFragmentShaderRef = loadShader(GL_FRAGMENT_SHADER, cameraFragmentShader);
 	objectVerticeShaderRef = loadShader(GL_VERTEX_SHADER, objectVerticeShader);
@@ -162,7 +83,7 @@ Renderer::Renderer()
 		LOGE("setup graphics failed !!!");
 		return;
 	}
-	// attach the camera shaders
+	// attach the search pattern shaders
 	glAttachShader(searchPatternProgramRef, searchPatternVerticeShaderRef);
 	glAttachShader(searchPatternProgramRef, searchPatternFragmentShaderRef);
 	this->linkProgram(searchPatternProgramRef);
@@ -173,34 +94,27 @@ Renderer::Renderer()
 		LOGE("setup graphics failed !!!");
 		return;
 	}
-	// attach the camera shaders
+	// attach the object shaders
 	glAttachShader(objectProgramRef, objectVerticeShaderRef);
 	glAttachShader(objectProgramRef, objectFragmentShaderRef);
 	this->linkProgram(objectProgramRef);
 
-
+	// set the opengl References to the member of the class for further use
 	vsCamPosRef = glGetAttribLocation(cameraProgramRef, "a_position");
 	vsCamTexRef = glGetAttribLocation(cameraProgramRef, "a_texCoord");
 	fsCamTextureRef = glGetUniformLocation(cameraProgramRef, "u_textureSampler");
-	LOGI("camera attributes: pos=%d, tex=%d", vsCamPosRef, vsCamTexRef);
-	LOGI("camera uniforms: tex=%d", fsCamTextureRef);
-
 	vsObjPosRef = glGetAttribLocation(objectProgramRef, "a_position");
 	vsObjNormalRef = glGetAttribLocation(objectProgramRef, "a_normal");
 	vsObjTexRef = glGetAttribLocation(objectProgramRef, "a_texCoord");
 	vsObjProjectionViewRef = glGetUniformLocation(objectProgramRef, "u_projectionView");
 	vsObjModelViewRef = glGetUniformLocation(objectProgramRef, "u_modelView");
 	fsObjTextureRef = glGetUniformLocation(objectProgramRef, "u_textureSampler");
-	LOGI("object attributes: pos=%d, normal=%d, tex=%d", vsObjPosRef, vsObjNormalRef, vsObjTexRef);
-	LOGI("object uniforms: projView=%d, modelView=%d, tex=%d", vsObjProjectionViewRef, vsObjModelViewRef, fsObjTextureRef);
-
 	vsSearchPosRef = glGetAttribLocation(searchPatternProgramRef, "a_position");
 	vsSearchNormalRef = glGetAttribLocation(searchPatternProgramRef, "a_normal");
 	vsSearchProjectionViewRef = glGetUniformLocation(searchPatternProgramRef, "u_projectionView");
 	vsSearchModelViewRef = glGetUniformLocation(searchPatternProgramRef, "u_modelView");
-	LOGI("search pattern attributes: pos=%d, normal=%d", vsSearchPosRef, vsSearchNormalRef);
-	LOGI("search uniforms: projView=%d, modelView=%d", vsSearchProjectionViewRef, vsSearchModelViewRef);
 
+	//enable the needed opengl features for the object and search pattern program
     glUseProgram(objectProgramRef);
 
     glEnable(GL_DEPTH_TEST);
@@ -221,14 +135,10 @@ Renderer::~Renderer()
 {
 }
 
-// interface methods
 void Renderer::setViewport(float offsetX, float offsetY, float width, float height)
 {
 	glViewport(offsetX, offsetY, width, height);
     checkGlError("glViewport");
-
-	LOGI("viewport width: %f", width);
-	LOGI("viewport height: %f", height);
 }
 
 /*
@@ -249,6 +159,7 @@ GLuint Renderer::loadShader(GLenum shaderType, const char* pSource) {
             if (infoLen) {
                 char* buf = (char*) malloc(infoLen);
                 if (buf) {
+                	//print error message for debugging purpose
                     glGetShaderInfoLog(shader, infoLen, NULL, buf);
                     LOGE("Could not compile shader %d:\n%s\n",
                             shaderType, buf);
@@ -285,7 +196,6 @@ void Renderer::linkProgram(GLuint programHandler) {
  * Texture handling
  */
 GLuint Renderer::generateTexture() {
-	// TODO: has to be improved when objects contains textures
 	GLuint textureRef;
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &textureRef);
@@ -336,16 +246,13 @@ GLubyte* Renderer::createSearchPattern(EnvironmentData *envData) {
 		glVertexAttribPointer(vsSearchPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
 		checkGlError("glVertexAttribPointer");
 
-		//glVertexAttribPointer(vsSearchNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
-		//checkGlError("glVertexAttribPointer");
-
 		glEnableVertexAttribArray(vsSearchPosRef);
 		checkGlError("glEnableVertexAttribArray");
 
 		glDrawElements(GL_TRIANGLES, m->getNumberOfFaces(), GL_UNSIGNED_SHORT, m->getFaces());
 		checkGlError("glDrawElemnts");
     }
-
+    // read the rendered image data from the framebuffer to return the data
     GLubyte *buffer = new GLubyte[width * height * 4];
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
@@ -388,7 +295,6 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 
     vector<Model*> *models = envData->getModels();
 
-    bool showNormals = false;
     glm::mat4 PM = envData->getProjectionMatrix() * envData->getViewMatrix();
     glUniformMatrix4fv(vsObjProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
 
@@ -401,122 +307,25 @@ void Renderer::renderFrame(EnvironmentData *envData) {
 		glVertexAttribPointer(vsObjPosRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT());
 		checkGlError("glVertexAttribPointer");
 
-		//glVertexAttribPointer(vsObjNormalRef, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+3);
-		//checkGlError("glVertexAttribPointer");
-
 		glVertexAttribPointer(vsObjTexRef, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 9, m->getVNT()+6);
 		checkGlError("glVertexAttribPointer");
 
 		glEnableVertexAttribArray(vsObjPosRef);
 		checkGlError("glEnableVertexAttribArray");
 
-        if (!showNormals) {
-
-        	Material *materials = m->getMaterials();
-        	for (int i=0; i < m->getNumberOfMaterials(); i++) {
-        	//if (i==5) {
-            		Material mat = materials[i];
-                    // bind le texture
-                    glUniform1i(fsObjTextureRef, 0);
-                    checkGlError("glUniform1i");
-                    glBindTexture(GL_TEXTURE_2D, mat.textureReference);
-                    checkGlError("glBindTexture");
-                	glDrawElements(GL_TRIANGLES, mat.length*3, GL_UNSIGNED_SHORT,m->getFaces() + mat.startIndex*3);
-                	checkGlError("glDrawElemnts");
-        		//}
-        	}
-
-
-
-
-        } else {
-        	//draw normals
-        	for (int i = 0; i < m->getNumberOfVNT(); i++) {
-        		if (i%9 == 0) {
-
-        			float scale = 4.0f;
-
-					float xPos = m->getVNT()[i];
-					float yPos = m->getVNT()[i + 1];
-					float zPos = m->getVNT()[i + 2];
-
-					float xNorm = m->getVNT()[i + 3] * scale;
-					float yNorm = m->getVNT()[i + 4] * scale;
-					float zNorm = m->getVNT()[i + 5] * scale;
-
-					GLfloat line[] = {xPos, yPos, zPos,//0.0f, 0.0f, 1.0f,
-							xPos + xNorm, yPos + yNorm, zPos + zNorm
-								   };
-					GLfloat normals[] = {0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f
-								   };
-					glVertexAttribPointer(vsObjPosRef, 3, GL_FLOAT, GL_FALSE, 0, line);
-					checkGlError("glVertexAttribPointer normal position");
-
-					GLushort index[] = {0,1};
-					glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, index);
-					checkGlError("glDrawElements normal");
-
-      			}
-        	}
-
-        }
-
+		// get the materials and draw them
+		Material *materials = m->getMaterials();
+		for (int i=0; i < m->getNumberOfMaterials(); i++) {
+				Material mat = materials[i];
+				// bind the texture
+				glUniform1i(fsObjTextureRef, 0);
+				checkGlError("glUniform1i");
+				glBindTexture(GL_TEXTURE_2D, mat.textureReference);
+				checkGlError("glBindTexture");
+				glDrawElements(GL_TRIANGLES, mat.length*3, GL_UNSIGNED_SHORT,m->getFaces() + mat.startIndex*3);
+				checkGlError("glDrawElemnts");
+		}
     }
-
-    /*
-    GLfloat xAxis[] = {
-    	0.0f, 0.0f, 10.0f,
-    	100.0f, 0.0f, 10.0f
-    };
-    GLfloat yAxis[] = {
-    	0.0f, 0.0f, 10.0f,
-    	0.0f, 100.0f, 10.0f
-    };
-    GLfloat zAxis[] = {
-    	0.0f, 0.0f, 10.0f,
-    	0.0f, 0.0f, 100.0f
-    };
-
-    glm::mat4 MVP = envData->getProjectionMatrix() * envData->getViewMatrix() * glm::mat4();
-
-    glUniform4f(vsColorRef,  1.0f,  0.0f,  0.0f,  1.0f);
-    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
-    glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, xAxis);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(vsPositionRef);
-    checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_LINES, 0, 2);
-    checkGlError("glDrawArrays");
-
-    glUniform4f(vsColorRef,  0.0f,  1.0f,  0.0f,  1.0f);
-    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
-    glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, yAxis);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(vsPositionRef);
-    checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_LINES, 0, 2);
-    checkGlError("glDrawArrays");
-
-    glUniform4f(vsColorRef,  0.0f,  0.0f,  1.0f,  1.0f);
-    glUniformMatrix4fv(vsModelViewProjectionRef, 1, GL_FALSE, glm::value_ptr(MVP));
-    glVertexAttribPointer(vsPositionRef, 3, GL_FLOAT, GL_FALSE, 0, zAxis);
-    checkGlError("glVertexAttribPointer");
-    glEnableVertexAttribArray(vsPositionRef);
-    checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_LINES, 0, 2);
-    checkGlError("glDrawArrays");
-	*/
-	/*
-	//calculate FPS
-	 struct timespec res;
-	 clock_gettime(CLOCK_MONOTONIC, &res);
-
-	 double currentTime = 1000.0*res.tv_sec + (double)res.tv_nsec/1e6;
-	 double timeDelta = currentTime-lastTime;
-	 lastTime = currentTime;
-	 //LOGI("FPS: %f",timeDelta);
-	  */
 }
 
 void Renderer::printGLString(const char *name, GLenum s) {
