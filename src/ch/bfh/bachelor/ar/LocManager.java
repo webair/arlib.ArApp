@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 public class LocManager implements LocationListener{
-	//Location
+	
 	LocationManager lm;
 	private static final long MINIMUM_DISTANCE_CHANGE_FOR_UPDATES = 1;
 	private static final long MINIMUM_TIME_BETWEEN_UPDATES = 500;
@@ -19,7 +19,6 @@ public class LocManager implements LocationListener{
 	private float currentLon;
 	private boolean gpsSet;
 	private Timer timer;
-	private TimerTask timerTask;
 	private static final String TAG="LocationManager";
 	private boolean testing;
 	
@@ -44,8 +43,7 @@ public class LocManager implements LocationListener{
 					}
 				}
 			}, 0, 500l);
-			lm = (LocationManager) context.getSystemService(context.LOCATION_SERVICE);
-	         
+			lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 	        lm.requestLocationUpdates(
 		    LocationManager.GPS_PROVIDER,
 		    MINIMUM_TIME_BETWEEN_UPDATES,
@@ -55,10 +53,6 @@ public class LocManager implements LocationListener{
 		}
 		else
 		{
-			//schreg vordrann
-			//this.currentLat=46.947337f;
-			///this.currentLon=7.443957f;
-			//grad vordranne
 			this.currentLat=46.947319f;
 			this.currentLon=7.443999f;
 		}
@@ -75,7 +69,6 @@ public class LocManager implements LocationListener{
 
 	@Override
 	public void onProviderDisabled(String provider) {
-		// TODO Auto-generated method stub
 		
 	}
 
