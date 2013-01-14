@@ -1,6 +1,10 @@
 #ifndef AR_DEFINITIONS
 #define AR_DEFINITIONS
 
+/*
+ * Definition of structures to group the data
+ */
+
 #include <GLES2/gl2.h>
 
 struct Point {

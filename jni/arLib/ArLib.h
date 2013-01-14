@@ -22,6 +22,10 @@ using namespace cv;
 class ArLib {
 
 public:
+	/*
+	 * constrctor to instantiate the ArLib. will calculate
+	 * viewport for later rendering
+	 */
 	ArLib(Renderer* r,
 			int viewportWidth,
 			int viewportHeight,
@@ -31,27 +35,48 @@ public:
 
 	~ArLib();
 
-	//camera image
+	/*
+	 * sets the camera angle which will be needed to calulate the correct
+	 * projection
+	 */
 	void setVerticalAngle(float angle);
 
-	//actions
+	/*
+	 * proecesses the image start the rendering process.
+	 */
 	void processImage(unsigned char *imageData);
 
-	//device states
+	/*
+	 * sets the current device orienation (azimuth, pitch and roll)
+	 */
 	void setDeviceOrientation(Orientation orientation);
+
+	/*
+	 * sets the current device location (latitude, longitude)
+	 */
 	void setDeviceLocation(Location location);
 
-	//getters & setters
+	/*
+	 * returns the projection matrix
+	 */
 	glm::mat4 getProjection();
-	EnvironmentData* envData;
 
-	//adding models
+	/*
+	 * method to add a model. will create the needed textures and materials
+	 */
 	void addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData);
+
+	/*
+	 * returns the curren environment data object
+	 */
+
+	EnvironmentData* getEnvironmentData();
+
 private:
-	// open gl stuff
 	Renderer *renderer;
 	glm::mat4* baseProjection;
 	unsigned char* rgbaRaw;
+	EnvironmentData* envData;
 
 	void createViewport(float availableWidth, float availableHeight);
 

@@ -19,44 +19,6 @@ int imageDataSize = 0;
 int rImageWidth = 0;
 int rImageHeight = 0;
 
-GLushort a_indices[]  = { 0, 1, 2,   2, 3, 0,      // front
-                       4, 5, 6,   6, 7, 4,      // right
-                       8, 9,10,  10,11, 8,      // top
-                      12,13,14,  14,15,12,      // left
-                      16,17,18,  18,19,16,      // bottom
-                      20,21,22,  22,23,20 };    // back
-
-GLfloat a_vertices[] = {
-						1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front)
-                       -1, 1, 1,   0, 0, 1,   0, 1, 1,              // v1
-                       -1,-1, 1,   0, 0, 1,   0, 0, 1,              // v2
-                        1,-1, 1,   0, 0, 1,   1, 0, 1,              // v3
-
-                        1, 1, 1,   1, 0, 0,   1, 1, 1,              // v0 (right)
-                        1,-1, 1,   1, 0, 0,   0, 1, 1,              // v3
-                        1,-1,-1,   1, 0, 0,   0, 0, 1,              // v4
-                        1, 1,-1,   1, 0, 0,   1, 0, 1,              // v5
-
-                        1, 1, 1,   0, 1, 0,   1, 1, 1,              // v0 (top)
-                        1, 1,-1,   0, 1, 0,   0, 1, 1,              // v5
-                       -1, 1,-1,   0, 1, 0,   0, 0, 1,              // v6
-                       -1, 1, 1,   0, 1, 0,   1, 0, 1,              // v1
-
-                       -1, 1, 1,  -1, 0, 0,   1, 1, 1,              // v1 (left)
-                       -1, 1,-1,  -1, 0, 0,   0, 1, 1,              // v6
-                       -1,-1,-1,  -1, 0, 0,   0, 0, 1,              // v7
-                       -1,-1, 1,  -1, 0, 0,   1, 0, 1,              // v2
-
-                       -1,-1,-1,   0,-1, 0,   1, 1, 1,              // v7 (bottom)
-                        1,-1,-1,   0,-1, 0,   0, 1, 1,              // v4
-                        1,-1, 1,   0,-1, 0,   0, 0, 1,              // v3
-                       -1,-1, 1,   0,-1, 0,   1, 0, 1,              // v2
-
-                        1,-1,-1,   0, 0,-1,   1, 1, 1,              // v4 (back)
-                       -1,-1,-1,   0, 0,-1,   0, 0, 0,              // v7
-                       -1, 1,-1,   0, 0,-1,   0, 1, 0,              // v6
-                        1, 1,-1,   0, 0,-1,   1, 0, 1 };            // v5
-
 extern "C" {
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_initArLib
@@ -89,16 +51,6 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 			Location modelLocation;
 			modelLocation.latitude = latitude;
 			modelLocation.longitude = longitude;
-
-		    //cube model
-			float centerOfGravity[] = {0.0f, 0.0f, 0.0f};
-			float boundingBox[36];
-			Model *cube = new Model(1,a_vertices, 9*4*6,
-					 a_indices, 6*6,
-					 centerOfGravity, boundingBox,
-					  0.0f, modelLocation);
-		    arLib->addModel(cube, NULL, 0, NULL);
-
 
 			jfloat* vntRaw  = env->GetFloatArrayElements(vntArray, 0);
 			jshort* facesRaw  = env->GetShortArrayElements(facesArray, 0);
@@ -145,17 +97,11 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 				textureDataArray[i] = texD;
 			}
 
-			LOGI("added model with vnt: %d, faces: %d", env->GetArrayLength(vntArray), env->GetArrayLength(facesArray));
-			LOGI("added model with cog: %d, bb: %d", env->GetArrayLength(cogArray), env->GetArrayLength(bbArray));
-
-			// bundeshaus lat/lng 46.94645 / 7.44421
 			Model *myModel = new Model(2, (GLfloat *)vntRaw, env->GetArrayLength(vntArray),
 					(GLushort *)facesRaw, env->GetArrayLength(facesArray),
 					(GLfloat *)cogRaw, (GLfloat *)bbRaw,
 					(float) northAngle, modelLocation);
 
-
-			//env->GetArrayLength(textureArrayArray)
 		    arLib->addModel(myModel, materialRaw, env->GetArrayLength(textureArrayArray), textureDataArray);
 
 			env->ReleaseFloatArrayElements(vntArray, vntRaw, 0);
@@ -163,20 +109,13 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_addModel
 		    env->ReleaseFloatArrayElements(cogArray, cogRaw, 0);
 		    env->ReleaseFloatArrayElements(bbArray, bbRaw, 0);
 
-		    /*
-			for(int i=0;i<env->GetArrayLength(textureArrayArray);i++)
-			{
-				jbyte* rawdata = (jbyte *)textureDataArray[i].byteData;
-				env->ReleaseByteArrayElements(textureByteArray[i], rawdata,0);
-			}
-			*/
 			env->ReleaseIntArrayElements(materialArray, materialRaw, 0);
 
 }
 
 JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
   (JNIEnv *env, jclass obj, jbyteArray yuvImageArray, jfloat azimuth,
-		  jfloat pitch, jfloat roll, jfloatArray rotationMatrixArray, jfloat latitude,jfloat longitude)
+		  jfloat pitch, jfloat roll, jfloat latitude, jfloat longitude)
 	{
 		jbyte* yuvRaw  = env->GetByteArrayElements(yuvImageArray, 0);
 		Orientation orientation;
@@ -184,23 +123,15 @@ JNIEXPORT void JNICALL Java_ch_bfh_bachelor_ar_ArLib_precessImage
 		orientation.roll = (float) roll;
 		orientation.pitch = (float) pitch;
 
-		//LOGI("azimuth: %f, pitch: %f, roll: %f", orientation.azimuth, orientation.pitch, orientation.roll);
-
-		float *rotationMatrixRaw = env->GetFloatArrayElements(rotationMatrixArray, 0);
-		arLib->envData->setRotationMatrix(rotationMatrixRaw);
 		arLib->setDeviceOrientation(orientation);
 
-		//ca. Rathausgasse 57
 	    Location location;
 	    location.latitude = (float) latitude;
 	    location.longitude = (float) longitude;
-	    //location.latitude = 46.948592;
-	    //location.longitude = 7.449328;
 
 		arLib->setDeviceLocation(location);
 		arLib->processImage((unsigned char *)yuvRaw);
 
 		env->ReleaseByteArrayElements(yuvImageArray, yuvRaw, 0);
-	    env->ReleaseFloatArrayElements(rotationMatrixArray, rotationMatrixRaw, 0);
 	}
 }

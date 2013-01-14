@@ -23,7 +23,7 @@ ArLib::ArLib(Renderer* r,
 	createViewport((float) viewportWidth, (float) viewportHeight);
 
 	// create camera texture
-	envData->cameraTextrueRef = r->generateTexture();
+	envData->setCameraTextureReference(r->generateTexture());
 }
 
 void ArLib::createViewport(float availableWidth, float availableHeight)
@@ -80,7 +80,7 @@ void ArLib::processImage(unsigned char *imageData)
 	cvtColor(yuv, rgba, CV_YUV420sp2RGBA);
 
 	// display camera image
-	renderer->loadTexture(envData->cameraTextrueRef,rgbaRaw, imageDimension.width, imageDimension.height);
+	renderer->loadTexture(envData->getCameraTextureReference(),rgbaRaw, imageDimension.width, imageDimension.height);
 
 	Location rathuusgass57;
 	rathuusgass57.latitude = 46.94847f;
@@ -98,23 +98,14 @@ void ArLib::processImage(unsigned char *imageData)
     	float d = GeoMath::getDistance(envData->getDeviceLocation(),m->getLocation());
     	float a = GeoMath::getAngle(envData->getDeviceLocation(), m->getLocation());
 
-    	//LOGI("distance: %f, angle: %f",d,a);
-
     	mat4 view = rotate(mat4(), -a, vec3(0.0f, 1.0f, 0.0f));
     	view = translate(view, vec3(0.0f,0.0f, -d));
     	view = rotate(view, a, vec3(0.0f, 1.0f, 0.0f));
-    	//only resize cube
-    	if (i==0) {
-    		view = scale(view, vec3(21.0f, 21.0f, 21.0f));
-    	}
     	m->setWorldMatrix(view);
     }
 
 
     GLubyte *searchPattern = renderer->createSearchPattern(envData);
-	//renderer->loadTexture(envData->objectTextrueRef,searchPattern, imageDimension.width, imageDimension.height);
-
-	//exit(-1);
 	free(searchPattern);
 
 	renderer->renderFrame(envData);
@@ -122,9 +113,6 @@ void ArLib::processImage(unsigned char *imageData)
 }
 
 void ArLib::addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData) {
-	// create Materials
-	LOGI("%d", numberOfMaterials);
-	//numberOfMaterials = (int)4;
 	Material *mats = new Material[numberOfMaterials];
 	for (int i=0; i < numberOfMaterials; i++) {
 		Material material;

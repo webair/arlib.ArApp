@@ -12,6 +12,15 @@ EnvironmentData::~EnvironmentData()
 	delete models;
 }
 
+void EnvironmentData::setCameraTextureReference(GLuint reference)
+{
+	this->cameraTextrueRef = reference;
+
+}
+GLuint EnvironmentData::getCameraTextureReference() {
+	return this->cameraTextrueRef;
+}
+
 void EnvironmentData::setImageDimension(Dimension dimension)
 {
 	imageDimension = dimension;
@@ -38,7 +47,6 @@ void EnvironmentData::setVerticalAngle(float angle, float near, float far) {
 	frustumAngle = angle;
 	frustumNear = near;
 	frustumFar = far;
-	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
 	this->createBaseProjection();
 }
 
@@ -51,16 +59,8 @@ void EnvironmentData::createBaseProjection()
 {
 	frustumNear = 1.0f;
 	frustumFar = 1000.0f;
-	frustumDistanceRatio = tan((frustumAngle*3.141592f/180.0f) * 0.5f);
-
-    LOGI("setup graphics:");
-    LOGI("frustum near: %f", frustumNear);
-    LOGI("frustum far: %f", frustumFar);
-    LOGI("frustum angle: %f", frustumAngle);
-    LOGI("frustum distance ratio: %f", frustumDistanceRatio);
 
     mat4 projection = perspective(frustumAngle, this->getImageRatio(), frustumNear, frustumFar);
-    //mat4 projection = perspective(40.0f, this->getImageRatio(), frustumNear, frustumFar);
     baseProjection = new mat4(projection);
 }
 
@@ -72,12 +72,6 @@ void EnvironmentData::setDeviceOrientation(Orientation orientation)
 Orientation EnvironmentData::getDeviceOrientation()
 {
 	return deviceOrientation;
-}
-
-void EnvironmentData::setRotationMatrix(float *rotationMatrix) {
-	// REMINDER: glm is column major, so access to value: mat4[column][row]
-	mat4 rotMat = transpose(make_mat4(rotationMatrix));
-	this->rotationMatrix = new mat4(rotMat);
 }
 
 glm::mat4 EnvironmentData::getProjectionMatrix()

@@ -1,6 +1,12 @@
 #ifndef AR_ENVIROMENT_DATA
 #define AR_ENVIROMENT_DATA
 
+/*
+ * EnviromentData class to hold all relevant data for the rendering process
+ * as well as for the image processing
+ *
+ */
+
 #include <opencv2/core/core.hpp>
 #include <GLES2/gl2.h>
 #include <vector>
@@ -18,8 +24,12 @@ public:
 	EnvironmentData();
 	~EnvironmentData();
 
-	//gles2 helpers
-	GLuint cameraTextrueRef;
+	/*
+	 * getters and setters for the relevant Data
+	 */
+
+	void setCameraTextureReference(GLuint reference);
+	GLuint getCameraTextureReference();
 
 	void setVerticalAngle(float angle, float near, float far);
 	float getVerticalAngle();
@@ -31,7 +41,6 @@ public:
 
 	//device states
 	void setDeviceOrientation(Orientation orientation);
-	void setRotationMatrix(float *rotationMatrix);
 	Orientation getDeviceOrientation();
 	void setDeviceLocation(Location location);
 	Location getDeviceLocation();
@@ -42,16 +51,14 @@ public:
 	mat4 getProjectionMatrix();
 	mat4 getViewMatrix();
 
-
-
-	float frustumDistanceRatio;
 private:
+	GLuint cameraTextrueRef;
 	float frustumNear;
 	float frustumFar;
 	float frustumAngle;
 
 	mat4* baseProjection;
-	mat4* rotationMatrix;
+
 	//image stuff
 	Dimension imageDimension;
 	float imageRatio;

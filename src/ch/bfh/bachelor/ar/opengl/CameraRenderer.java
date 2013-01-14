@@ -145,7 +145,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			Log.i(TAG, String.format("sdk row3: %f, %f, %f", outR[8], outR[9],
 					outR[10]));*/
 
-			ArLib.precessImage(frame, azimuth, pitch, roll, RE.clone(), lm.getCurrentLat(), lm.getCurrentLon());
+			ArLib.precessImage(frame, azimuth, pitch, roll, lm.getCurrentLat(), lm.getCurrentLon());
 			// ArLib.precessImage(frame, azimuth, pitch, roll);
 
 			this.notify();

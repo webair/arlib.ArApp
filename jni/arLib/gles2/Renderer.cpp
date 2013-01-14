@@ -285,7 +285,7 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     // Set the sampler texture unit to 0
     glUniform1i(fsCamTextureRef, 0);
     checkGlError("fsCameraTextureRef");
-    glBindTexture(GL_TEXTURE_2D, envData->cameraTextrueRef);
+    glBindTexture(GL_TEXTURE_2D, envData->getCameraTextureReference());
     checkGlError("glBindTexture");
     glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
@@ -299,7 +299,6 @@ void Renderer::renderFrame(EnvironmentData *envData) {
     glUniformMatrix4fv(vsObjProjectionViewRef, 1, GL_FALSE, glm::value_ptr(PM));
 
     for(vector<Model*>::size_type i = 0; i != models->size(); i++) {
-    	if (i==0){continue;}
     	Model* m = models->at(i);
 
     	glUniformMatrix4fv(vsObjModelViewRef, 1, GL_FALSE, glm::value_ptr(m->getModelMatrix()));
