@@ -57,11 +57,6 @@ public:
 	void setDeviceLocation(Location location);
 
 	/*
-	 * returns the projection matrix
-	 */
-	glm::mat4 getProjection();
-
-	/*
 	 * method to add a model. will create the needed textures and materials
 	 */
 	void addModel(Model* m,int materials[], int numberOfMaterials, TextureData* textureData);
