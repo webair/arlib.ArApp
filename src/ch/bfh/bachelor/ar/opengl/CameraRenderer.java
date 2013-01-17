@@ -196,8 +196,11 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			newFaceFromTo[i*2] = b.matToFace[i][0];
 			newFaceFromTo[(i*2)+1] = b.matToFace[i][1];
 		}
+		//Initialize the AR Library
 		ArLib.initArLib(width, height, frameWidth, frameHeight,
 				cameraAngleVertical);
+		
+		//Add the Modeldata
 		ArLib.addModel(b.objectid, b.vnt, facesSh, b.pointOfGravity, bbox,
 				b.northangle, b.lat, b.lon, picArray, newFaceFromTo, dimension);
 
@@ -367,6 +370,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			gyro = event.values.clone();
 			break;
 		}
+		//check with gyroscope values
 		if (gyro != null && isGyroCorrectionEnable) {
 			bufferPointg++;
 			if (bufferPointg == bufferSizeg) {
@@ -374,6 +378,7 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 				java.util.Arrays.sort(this.aAg);
 				java.util.Arrays.sort(this.pAg);
 				java.util.Arrays.sort(this.rAg);
+				//insert values into Buffer
 				float a = this.aAg[this.bufferMiddleg];
 				float b = this.pAg[this.bufferMiddleg];
 				float c = this.rAg[this.bufferMiddleg];
@@ -382,7 +387,6 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 					this.isMoving = true;
 				else
 					this.isMoving = false;
-				// Log.i(TAG,"C Value: "+String.valueOf(c));
 			} else {
 				aAg[bufferPointg] = Math.abs(Math.round(gyro[0]));
 				pAg[bufferPointg] = Math.abs(Math.round(gyro[1]));
@@ -390,27 +394,30 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			}
 			gyro = null;
 		}
-
+		//if both, Magnet and Accelerator values are availlable
 		if (mags != null && accels != null) {
 			if (isGyroCorrectionEnable) {
 				if (!this.isMoving) {
 					return;
 				}
 			}
+			//calculate rotation
 			SensorManager.getRotationMatrix(RE, I, accels, mags);
 			// remap for landscape
 			SensorManager.remapCoordinateSystem(RE, SensorManager.AXIS_X,
 					SensorManager.AXIS_Z, outR);
+			//get axis values for the direction
 			SensorManager.getOrientation(outR, values);
 
 			if (isSensorBufferingEnable) {
 				bufferPoint++;
 				if (bufferPoint == bufferSize) {
 					bufferPoint = 0;
+					
+					//Calculate the median from the buffers
 					java.util.Arrays.sort(this.aA);
 					java.util.Arrays.sort(this.pA);
 					java.util.Arrays.sort(this.rA);
-
 					azimuth = aA[bufferMiddle];
 					pitch = pA[bufferMiddle];
 					roll = rA[bufferMiddle];

@@ -34,6 +34,7 @@ public class MainActivity extends Activity{
     	@Override
     	public void onManagerConnected(int status) {
     		gpsTesting =true;
+    		//Start LocManager for device location
     		lm = new LocManager(MainActivity.this, gpsTesting);
     		
     		switch (status) {
@@ -44,6 +45,7 @@ public class MainActivity extends Activity{
 
 					if(loadModules)
 					{
+							//Start Object Request
 					       l = null;
 					       Communicator c = new Communicator("83.169.4.84", 3131, lm);
 					       Thread a = new Thread(c);
@@ -52,16 +54,15 @@ public class MainActivity extends Activity{
 					    	   a.join();
 					    	   l = c.l;
 							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 					       if(l!=null)
 					       {
+					    	   //initialize CameraRenderer
 					    	   cr = new CameraRenderer(MainActivity.this, l,lm);
 					       }
 					}
 					//instantiate open gl renderer
-					
 					View mainView = new OpenGLSurfaceView(getApplication(), cr);					
 					setContentView(mainView);
 					

@@ -25,14 +25,16 @@ public class Communicator implements Runnable
 	int port;
 	private Socket socket;
 	private LocManager lm;
-	
+	/*
+	 * Constructor with the Connectionparameter
+	 */
 	public Communicator (String ip, int port, LocManager lm)
 	{
 		this.lm = lm;
 		this.ip=ip;
 		this.port=port;
 	}
-	
+	//Function to request Objects
 	private void sendObject(Serializable s)
 	{
 		ObjectOutputStream oos =null;
@@ -45,6 +47,7 @@ public class Communicator implements Runnable
 			e.printStackTrace();
 		}
 	}
+	//Function to receive Objects
 	private void getObject()
 	{
 		
@@ -70,12 +73,7 @@ public class Communicator implements Runnable
 			{
 				msg="unknown object...";
 			}
-
-				
-
-			
 		} catch (StreamCorruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -90,10 +88,11 @@ public class Communicator implements Runnable
 		
 		GetObjects go = new GetObjects(lm.getCurrentLon(), lm.getCurrentLat(), 10);
 		try {
-			
+			//request Objects
 			socket = new Socket(ip, port);
 			Log.w("msg1", "request objects");
 			this.sendObject(go);
+			//get Objects
 			Log.w("msg1", "waiting for requested objects");
 			this.getObject();
 			

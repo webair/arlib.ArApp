@@ -28,6 +28,7 @@ public class LocManager implements LocationListener{
 		if(!testing)
 		{
 			this.gpsSet = false;
+			//Check repeatly if a position is found
 			timer = new Timer();
 			timer.scheduleAtFixedRate(new TimerTask() {
 				@Override
@@ -53,12 +54,14 @@ public class LocManager implements LocationListener{
 		}
 		else
 		{
+			//Dummy position for testing
 			this.currentLat=46.947319f;
 			this.currentLon=7.443999f;
 		}
 	}
 	@Override
 	public void onLocationChanged(Location location) {
+		//Update current position
 		if(!testing)
 		{
 		this.currentLat = (float) location.getLatitude();
