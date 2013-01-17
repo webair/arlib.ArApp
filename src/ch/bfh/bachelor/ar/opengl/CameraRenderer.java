@@ -207,7 +207,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		// stub method
 	}
-
+	/*
+		starts the camera service
+	*/
 	public void openCamera() {
 		Log.i(TAG, "openCamera");
 		releaseCamera();
@@ -219,7 +221,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		cam.setPreviewCallbackWithBuffer(this);
 
 	}
-
+	/*
+		stops the camera service, usually if app goes to background
+	*/
 	public void releaseCamera() {
 		Log.i(TAG, "releaseCamera");
 		synchronized (this) {
@@ -232,7 +236,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		}
 		;
 	}
-
+	/*
+		starts the sensor service
+	*/
 	public void openSensor() {
 		sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
 				sensorDelay);
@@ -241,12 +247,16 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		sm.registerListener(this,
 				sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), sensorDelay);
 	}
-
+	/*
+		stops the sensor service, usually if app goes to background
+	*/
 	public void releaseSensor() {
 		Log.i(TAG, "release sensor");
 		sm.unregisterListener(this);
 	}
-
+	/*
+		configurates the camera with the appropriate configurations
+	*/
 	public void setupCamera(int width, int height) {
 		Log.i(TAG, "setupCamera");
 		synchronized (this) {
@@ -314,7 +324,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		Log.i(TAG, String.format("%d", accuracy));
 
 	}
-
+	/*
+		cleans and corrects the sensor values
+	*/
 	protected float[] correctSensorValues(float[] input, float[] output) {
 		if (output == null) {
 			// Log.i(TAG, "not low passed");
@@ -330,7 +342,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		}
 		return output;
 	}
-
+	/*
+		overriden method, gets called when sensor change happen
+	*/
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 
