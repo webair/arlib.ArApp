@@ -10,7 +10,9 @@ import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
-
+/*
+	This class is managing the OpenGL ES2 Context and View
+*/
 public class OpenGLSurfaceView extends GLSurfaceView {
 	
     private static String TAG = "OpenGlSurfaceView";
@@ -59,7 +61,9 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         /* Set the renderer responsible for frame rendering */
         setRenderer(renderer);
     }
-
+    /*
+    	Inner Class for creating the context with appropiate configurations
+    */
     private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
     	
         private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
