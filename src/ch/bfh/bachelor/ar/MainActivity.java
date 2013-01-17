@@ -15,7 +15,9 @@ import android.view.View;
 import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.opengl.CameraRenderer;
 import ch.bfh.bachelor.ar.opengl.OpenGLSurfaceView;
-
+/*
+	This class is the starting point for the app
+*/
 public class MainActivity extends Activity{
     private static final String TAG = "MainActivity";
 	private CameraRenderer cr;
@@ -24,7 +26,10 @@ public class MainActivity extends Activity{
 	private boolean gpsTesting;
 	private LocManager lm;
 
-	
+/*
+	OpenCV Callback loader, will be called as soon OpenCV Library
+	got loaded
+*/	
     private BaseLoaderCallback  mOpenCVCallBack = new BaseLoaderCallback(this) {
     	@Override
     	public void onManagerConnected(int status) {
@@ -71,7 +76,9 @@ public class MainActivity extends Activity{
 			}
     	}
 	};
-	
+	/*
+	overriden method, gets called when app started the first time
+	*/
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,13 +89,17 @@ public class MainActivity extends Activity{
         }
 
 	}
-	
+	/*
+	overriden method, gets called when app resumes the first time
+	*/
 	@Override
 	protected void onResume() {
 		super.onResume();
 		
 	}
-	
+	/*
+	overriden method, gets called when app goes to background
+	*/
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -96,13 +107,17 @@ public class MainActivity extends Activity{
 		cr.releaseCamera();
 	}
 	
-	//menu
+	/*
+	overriden method, gets called at app starts to check if a menu exists
+	*/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
-	
+/*
+	overriden method, used to create the menu
+*/	
    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     { 	
