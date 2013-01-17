@@ -23,7 +23,10 @@ import android.util.Log;
 import ch.bfh.arApp.model3D.Object3D;
 import ch.bfh.bachelor.ar.ArLib;
 import ch.bfh.bachelor.ar.LocManager;
-
+/*
+	This class handels the rendering and is the interface to the native 
+	AR Library
+*/
 public class CameraRenderer implements GLSurfaceView.Renderer,
 		android.hardware.Camera.PreviewCallback, SensorEventListener {
 
@@ -88,7 +91,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 	private LocManager lm;
 
 	
-
+	/*
+		Constructor, starts the sensor and camera service
+	*/
 	public CameraRenderer(Context context, ArrayList<Object3D> models, LocManager lm) {
 		this.lm = lm;
 		this.models = models;
@@ -117,7 +122,10 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			rAg = new float[bufferSize];
 		}
 	}
-
+	/*
+		overriden method, will be called if the openGL context is ready to draw
+		a frame. it will call the native render method as soon a image is ready
+	*/
 	@Override
 	public synchronized void onDrawFrame(GL10 gl) {
 		if (hasImage) {
@@ -126,7 +134,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 			this.notify();
 		}
 	}
-
+	/*
+		overriden method, will be called if the camera serves a new image
+	*/
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 
@@ -137,7 +147,9 @@ public class CameraRenderer implements GLSurfaceView.Renderer,
 		}
 		cam.addCallbackBuffer(buffer);
 	}
-
+	/*
+		overriden method, will be called if the device changes orientation
+	*/
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
 		openSensor();
